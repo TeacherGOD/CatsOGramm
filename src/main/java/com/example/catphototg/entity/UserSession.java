@@ -32,8 +32,8 @@ public class UserSession {
     @Column(name = "photo_file_id")
     private String photoFileId;
 
-    @Column(name = "photo_url")
-    private String photoUrl;
+    @Column(name = "file_path")
+    private String filePath;
 
     @CreationTimestamp
     private LocalDateTime createdAt;
