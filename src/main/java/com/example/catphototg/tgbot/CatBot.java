@@ -1,10 +1,12 @@
 package com.example.catphototg.tgbot;
 
 import com.example.catphototg.config.BotProperties;
+import com.example.catphototg.entity.Cat;
 import com.example.catphototg.entity.User;
 import com.example.catphototg.entity.UserSession;
 import com.example.catphototg.entity.enums.UserState;
 import com.example.catphototg.service.DispatcherService;
+import com.example.catphototg.service.FileStorageService;
 import com.example.catphototg.service.SessionService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -14,10 +16,14 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,12 +33,14 @@ public class CatBot extends TelegramLongPollingBot {
     private final BotProperties botProperties;
     private final DispatcherService dispatcher;
     private final SessionService sessionService;
+    private final FileStorageService fileStorageService;
 
-    public CatBot(BotProperties botProperties, DispatcherService dispatcher, SessionService sessionService) {
+    public CatBot(BotProperties botProperties, DispatcherService dispatcher, SessionService sessionService,FileStorageService fileStorageService) {
         super(botProperties.getToken());
         this.botProperties = botProperties;
         this.dispatcher = dispatcher;
         this.sessionService = sessionService;
+        this.fileStorageService=fileStorageService;
     }
 
     @Override
@@ -185,6 +193,49 @@ public class CatBot extends TelegramLongPollingBot {
         } catch (TelegramApiException e) {
             log.error("Ошибка отправки сообщения", e);
         }
+    }
+
+    public void showCatCard(Long chatId, User user, Cat cat) {
+        try {
+            Path filePath = fileStorageService.load(cat.getFilePath());
+            File file = filePath.toFile();
+
+            SendPhoto photo = new SendPhoto();
+            photo.setChatId(chatId.toString());
+            photo.setPhoto(new InputFile(file, "cat.jpg"));
+
+            String caption = String.format("%s%nАвтор: %s",
+                    cat.getName(),
+                    cat.getAuthor().getDisplayName());
+
+            photo.setCaption(caption);
+            photo.setReplyMarkup(createRatingKeyboard(cat));
+
+            execute(photo);
+        } catch (TelegramApiException e) {
+            handleError(chatId, "Ошибка отправки котика", e, user);
+        }
+    }
+
+    private InlineKeyboardMarkup createRatingKeyboard(Cat cat) {
+        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+
+        List<InlineKeyboardButton> row = new ArrayList<>();
+
+        InlineKeyboardButton likeBtn = new InlineKeyboardButton("👍 " + cat.getLikes());
+        likeBtn.setCallbackData("like_" + cat.getId());
+
+        InlineKeyboardButton dislikeBtn = new InlineKeyboardButton("👎 " + cat.getDislikes());
+        dislikeBtn.setCallbackData("dislike_" + cat.getId());
+
+        row.add(likeBtn);
+        row.add(dislikeBtn);
+
+        List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+        keyboard.add(row);
+
+        markup.setKeyboard(keyboard);
+        return markup;
     }
     public void sendDefaultMessage(Long chatId, User user) {
         sendPersonalizedMessage(chatId, user,

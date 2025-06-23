@@ -13,10 +13,10 @@ public class CatService {
     private final CatRepository catRepository;
 
     @Transactional
-    public Cat saveCat(String name, String photoUrl, User author) {
+    public Cat saveCat(String name, String filepath, User author) {
         Cat cat = new Cat();
         cat.setName(name);
-        cat.setPhotoUrl(photoUrl);
+        cat.setFilePath(filepath);
         cat.setAuthor(author);
         return catRepository.save(cat);
     }

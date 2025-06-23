@@ -36,7 +36,7 @@ public class AddCatConfirmationHandler implements UpdateHandler {
         if ("✅ Подтвердить".equals(text)) {
             Cat cat = catService.saveCat(
                     session.getCatName(),
-                    session.getPhotoUrl(),
+                    session.getFilePath(),
                     user
             );
 
