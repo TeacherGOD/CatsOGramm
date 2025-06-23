@@ -12,13 +12,8 @@ import com.example.catphototg.service.SessionService;
 import com.example.catphototg.tgbot.CatBot;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.objects.Message;
-import org.telegram.telegrambots.meta.api.objects.PhotoSize;
-import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.io.File;
-import java.util.Comparator;
-import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -46,29 +41,23 @@ public class AddCatPhotoHandler implements UpdateHandler {
         }
 
         if (message.hasPhoto()) {
-            List<PhotoSize> photos = message.getPhoto();
-            PhotoSize bestPhoto = photos.stream()
-                    .max(Comparator.comparing(PhotoSize::getFileSize))
-                    .orElse(null);
+            try {
+                String fileId = message.photoFileId();
+                String filePath = bot.getFilePath(fileId);
+                File fileData = bot.downloadFile(filePath);
 
-            if (bestPhoto != null && bestPhoto.getFileId() != null && !bestPhoto.getFileId().isEmpty()) {
-                try {
-                    String fileId = bestPhoto.getFileId();
-                    String filePath = bot.getFilePath(fileId);
-                    File fileData = bot.downloadFile(filePath);
+                String storedFilename = fileStorageService.store(fileData);
 
-                    String storedFilename = fileStorageService.store(fileData);
-
-                    UserSession updatedSession = sessionService.updateAndGetSession(telegramId, s -> {
-                        s.setPhotoFileId(bestPhoto.getFileId());
-                        s.setFilePath(storedFilename);
-                        s.setState(UserState.ADDING_CAT_CONFIRMATION);
-                    });
-                    bot.showCatConfirmation(chatId, updatedSession, user);
-                } catch (Exception e) {
-                    bot.handleError(chatId, "Ошибка обработки фото", e,user);
-                }
+                UserSession updatedSession = sessionService.updateAndGetSession(telegramId, s -> {
+                    s.setPhotoFileId(fileId);
+                    s.setFilePath(storedFilename);
+                    s.setState(UserState.ADDING_CAT_CONFIRMATION);
+                });
+                bot.showCatConfirmation(chatId, updatedSession, user);
+            } catch (Exception e) {
+                bot.handleError(chatId, "Ошибка обработки фото", e,user);
             }
+
         } else {
             bot.sendTextWithKeyboard(chatId, "Пожалуйста, отправьте фото котика:",
                     bot.createCancelKeyboard());

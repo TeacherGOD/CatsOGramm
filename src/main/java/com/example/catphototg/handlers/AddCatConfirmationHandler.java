@@ -37,7 +37,7 @@ public class AddCatConfirmationHandler implements UpdateHandler {
         if (BotConstants.CONFIRM_CAT_ACTION.equals(text)) {
             Cat cat = catService.saveCat(new CatCreationDto(
                     session.getCatName(),
-                    session.getPhotoUrl(),
+                    session.getFilePath(),
                     user));
 
             sessionService.clearSession(telegramId);
