@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -18,13 +19,16 @@ public class SessionService {
 
     @Transactional
     public UserSession getOrCreateSession(User user, UserState initialState) {
-        return sessionRepository.findByUserTelegramId(user.getTelegramId())
+        var session = sessionRepository.findByUserTelegramId(user.getTelegramId())
                 .orElseGet(() -> {
-                    UserSession session = new UserSession();
-                    session.setUser(user);
-                    session.setState(initialState);
-                    return sessionRepository.save(session);
+                    UserSession newSession = new UserSession();
+                    newSession.setUser(user);
+                    newSession.setState(initialState);
+                    return sessionRepository.save(newSession);
                 });
+        session.setState(initialState);
+        sessionRepository.save(session);
+        return session;
     }
     @Transactional
     public void updateSession(Long telegramId, Consumer<UserSession> updater) {
@@ -40,7 +44,17 @@ public class SessionService {
     }
 
     public Optional<UserSession> findByUserTelegramId(Long telegramId) {
-        return sessionRepository.findByUserTelegramId(telegramId);
+        Optional<UserSession> session = sessionRepository.findByUserTelegramId(telegramId);
+
+        if (session.isPresent() && isExpired(session.get())) {
+            sessionRepository.delete(session.get());
+            return Optional.empty();
+        }
+        return session;
+    }
+
+    private boolean isExpired(UserSession session) {
+        return session.getCreatedAt().isBefore(LocalDateTime.now().minusHours(2));
     }
 
     @Transactional

@@ -1,11 +1,10 @@
 package com.example.catphototg.tgbot;
 
 import com.example.catphototg.config.BotProperties;
+import com.example.catphototg.constants.BotConstants;
 import com.example.catphototg.entity.User;
 import com.example.catphototg.entity.UserSession;
-import com.example.catphototg.entity.enums.UserState;
 import com.example.catphototg.service.DispatcherService;
-import com.example.catphototg.service.SessionService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -14,8 +13,8 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.util.ArrayList;
@@ -26,13 +25,11 @@ import java.util.List;
 public class CatBot extends TelegramLongPollingBot {
     private final BotProperties botProperties;
     private final DispatcherService dispatcher;
-    private final SessionService sessionService;
 
-    public CatBot(BotProperties botProperties, DispatcherService dispatcher, SessionService sessionService) {
+    public CatBot(BotProperties botProperties, DispatcherService dispatcher) {
         super(botProperties.getToken());
         this.botProperties = botProperties;
         this.dispatcher = dispatcher;
-        this.sessionService = sessionService;
     }
 
     @Override
@@ -44,65 +41,102 @@ public class CatBot extends TelegramLongPollingBot {
         }
     }
 
-    public void sendPersonalizedMessage(Long chatId, User user, String messageText,
-                                        ReplyKeyboardMarkup keyboard) {
-        String personalizedText = personalizeMessage(user, messageText);
-        sendText(chatId, personalizedText, keyboard);
+    public void showMainMenu(Long chatId, User user) {
+        sendTextWithKeyboard(chatId, formatMainMenuMessage(user), createMainMenuKeyboard());
     }
-    public void sendText(Long chatId, String text, ReplyKeyboardMarkup keyboard) {
-        SendMessage message = new SendMessage();
-        message.setChatId(chatId.toString());
-        message.setText(text);
-        message.setReplyMarkup(keyboard);
-        executeMessage(message);
-    }
-    private String personalizeMessage(User user, String text) {
-        String name = user.getDisplayName() != null ?
-                user.getDisplayName() :
-                "Друг";
 
-        return text.replace("{name}", name);
+    private String formatMainMenuMessage(User user) {
+        return user.getDisplayName() + ", выбери действие:";
+    }
+
+    public void askForName(Long chatId) {
+        sendTextWithKeyboard(chatId, BotConstants.NAME_REGISTRATION_PROMPT, createCancelKeyboard());
     }
 
     public void askForCatName(Long chatId, User user) {
-        sendPersonalizedMessage(chatId, user,
-                "{name}, введите имя котика:", createCancelKeyboard());
+        String message = user.getDisplayName() + ", " + BotConstants.CAT_NAME_PROMPT;
+        sendTextWithKeyboard(chatId, message, createCancelKeyboard());
     }
 
     public void askForCatPhoto(Long chatId, User user) {
-        sendPersonalizedMessage(chatId, user,
-                "{name}, отправьте фото котика:", createCancelKeyboard());
+        String message = user.getDisplayName() + ", " + BotConstants.CAT_PHOTO_PROMPT;
+        sendTextWithKeyboard(chatId, message, createCancelKeyboard());
     }
 
     public void showCatConfirmation(Long chatId, UserSession session, User user) {
-        if (session.getPhotoFileId() == null || session.getPhotoFileId().isEmpty()) {
-            handleError(chatId, "Не удалось загрузить фото",
-                    new RuntimeException("Photo file id is empty"), user);
-            return;
-        }
         try {
-            String caption = personalizeMessage(user,
-                    "{name}, подтвердите добавление котика:\nИмя: " + session.getCatName());
+            String caption =
+                    user.getDisplayName() + ", " + BotConstants.CAT_CONFIRMATION_PROMPT+
+                    session.getCatName();
 
             SendPhoto photo = new SendPhoto();
             photo.setChatId(chatId.toString());
             photo.setPhoto(new InputFile(session.getPhotoFileId()));
             photo.setCaption(caption);
             photo.setReplyMarkup(createConfirmationKeyboard());
-            photo.validate();
             execute(photo);
         } catch (TelegramApiException e) {
-            handleError(chatId, "Ошибка отправки фото", e,user);
+            handleError(chatId, BotConstants.PHOTO_SENDING_ERROR, e,user);
         }
     }
+
     public String getFilePath(String fileId) throws TelegramApiException {
         GetFile getFile = new GetFile();
         getFile.setFileId(fileId);
         return execute(getFile).getFilePath();
     }
 
+    public InlineKeyboardMarkup createCancelKeyboard() {
+        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
 
-    public void sendTextWithKeyBoard(Long chatId, String text, ReplyKeyboardMarkup keyboard) {
+        List<InlineKeyboardButton> row = new ArrayList<>();
+        row.add(createButton(BotConstants.CANCEL_BUTTON, BotConstants.CANCEL_ACTION));
+
+        rows.add(row);
+        markup.setKeyboard(rows);
+        return markup;
+    }
+
+    public InlineKeyboardMarkup createConfirmationKeyboard() {
+        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+
+        List<InlineKeyboardButton> row = new ArrayList<>();
+        row.add(createButton(BotConstants.CONFIRM_BUTTON, BotConstants.CONFIRM_CAT_ACTION));
+        row.add(createButton(BotConstants.CANCEL_BUTTON, BotConstants.CANCEL_CAT_ACTION));
+
+        rows.add(row);
+        markup.setKeyboard(rows);
+        return markup;
+    }
+
+    public InlineKeyboardMarkup createMainMenuKeyboard() {
+        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+
+        List<InlineKeyboardButton> row1 = new ArrayList<>();
+        row1.add(createButton(BotConstants.SHOW_CATS_COMMAND, BotConstants.VIEW_CATS_ACTION));
+        row1.add(createButton(BotConstants.ADD_CAT_COMMAND, BotConstants.ADD_CAT_ACTION));
+
+        List<InlineKeyboardButton> row2 = new ArrayList<>();
+        row2.add(createButton(BotConstants.MY_CATS_COMMAND, BotConstants.MY_CATS_ACTION));
+        row2.add(createButton(BotConstants.CHANGE_NAME_COMMAND, BotConstants.CHANGE_NAME_ACTION));
+
+        rows.add(row1);
+        rows.add(row2);
+
+        markup.setKeyboard(rows);
+        return markup;
+    }
+
+    private InlineKeyboardButton createButton(String text, String callbackData) {
+        InlineKeyboardButton button = new InlineKeyboardButton(text);
+        button.setCallbackData(callbackData);
+        return button;
+    }
+
+    public void sendTextWithKeyboard(Long chatId, String text, InlineKeyboardMarkup keyboard) {
         try {
             SendMessage message = new SendMessage();
             message.setChatId(chatId.toString());
@@ -114,97 +148,21 @@ public class CatBot extends TelegramLongPollingBot {
         }
     }
 
-
-    public ReplyKeyboardMarkup createCancelKeyboard() {
-        ReplyKeyboardMarkup keyboard = new ReplyKeyboardMarkup();
-        keyboard.setResizeKeyboard(true);
-        List<KeyboardRow> rows = new ArrayList<>();
-        KeyboardRow row = new KeyboardRow();
-        row.add("❌ Отмена");
-        rows.add(row);
-        keyboard.setKeyboard(rows);
-        return keyboard;
-    }
-
-    public ReplyKeyboardMarkup createConfirmationKeyboard() {
-        ReplyKeyboardMarkup keyboard = new ReplyKeyboardMarkup();
-        keyboard.setResizeKeyboard(true);
-
-        List<KeyboardRow> rows = new ArrayList<>();
-        KeyboardRow row = new KeyboardRow();
-        row.add("✅ Подтвердить");
-        row.add("❌ Отменить");
-        rows.add(row);
-
-        keyboard.setKeyboard(rows);
-        return keyboard;
-    }
-    public void sendMainMenu(Long chatId, User user) {
-        sendPersonalizedMessage(chatId, user,
-                "{name}, выбери действие:", createMainMenuKeyboard());
-    }
-    public void handleError(Long chatId, String message, Exception e, User user) {
+    public void handleError(Long chatId, String message, Exception e,User user) {
         log.error(message, e);
-        sendPersonalizedMessage(chatId, user,
-                "😿 Упс, {name}, произошла ошибка: " + e.getMessage(),
+        sendTextWithKeyboard(chatId,
+                "😿 Упс, "+user.getDisplayName()+", произошла ошибка: " + e.getMessage(),
                 createMainMenuKeyboard());
-    }
-    public ReplyKeyboardMarkup createMainMenuKeyboard() {
-
-
-        ReplyKeyboardMarkup keyboard = new ReplyKeyboardMarkup();
-        keyboard.setResizeKeyboard(true);
-
-        List<KeyboardRow> rows = new ArrayList<>();
-
-        KeyboardRow row1 = new KeyboardRow();
-        row1.add("🐱 Смотреть котиков");
-        row1.add("➕ Добавить котика");
-
-        KeyboardRow row2 = new KeyboardRow();
-        row2.add("❤️ Мои котики");
-        row2.add("✏️ Сменить имя");
-
-        rows.add(row1);
-        rows.add(row2);
-
-        keyboard.setKeyboard(rows);
-        return keyboard;
-    }
-
-    public void askForName(Long chatId) {
-        SendMessage message = new SendMessage();
-        message.setChatId(chatId.toString());
-        message.setText("Привет! Как тебя зовут?");
-        message.setReplyMarkup(createCancelKeyboard());
-        executeMessage(message);
-    }
-    private void executeMessage(SendMessage message) {
-        try {
-            execute(message);
-        } catch (TelegramApiException e) {
-            log.error("Ошибка отправки сообщения", e);
-        }
-    }
-    public void sendDefaultMessage(Long chatId, User user) {
-        sendPersonalizedMessage(chatId, user,
-                "{name}, я не понял твою команду. Пожалуйста, используй меню:",
-                createMainMenuKeyboard());
-    }
-
-    public void handleChangeNameCommand(Long chatId, User user) {
-        sessionService.getOrCreateSession(user, UserState.CHANGING_NAME);
-        sessionService.updateSession(user.getId(), s->s.setState(UserState.CHANGING_NAME));
-        askForName(chatId);
     }
 
     @Override
     public String getBotUsername() {
-        return botProperties.getToken();
+        return botProperties.getName();
     }
 
     @Override
     public String getBotToken() {
         return botProperties.getToken();
     }
+
 }

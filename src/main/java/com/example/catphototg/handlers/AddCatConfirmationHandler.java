@@ -1,6 +1,9 @@
 package com.example.catphototg.handlers;
 
 
+import com.example.catphototg.constants.BotConstants;
+import com.example.catphototg.dto.CatCreationDto;
+import com.example.catphototg.dto.TelegramMessage;
 import com.example.catphototg.entity.Cat;
 import com.example.catphototg.entity.User;
 import com.example.catphototg.entity.UserSession;
@@ -11,7 +14,6 @@ import com.example.catphototg.service.SessionService;
 import com.example.catphototg.tgbot.CatBot;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.objects.Update;
 
 @Component
 @RequiredArgsConstructor
@@ -20,34 +22,32 @@ public class AddCatConfirmationHandler implements UpdateHandler {
     private final CatService catService;
 
     @Override
-    public boolean canHandle(User user, UserSession session, Update update) {
+    public boolean canHandle(User user, UserSession session, TelegramMessage message) {
         return session != null &&
                 session.getState() == UserState.ADDING_CAT_CONFIRMATION &&
-                update.hasMessage() &&
-                update.getMessage().hasText();
+                message.isCallback();
     }
 
     @Override
-    public void handle(CatBot bot, User user, UserSession session, Update update) {
-        String text = update.getMessage().getText();
-        Long chatId = update.getMessage().getChatId();
+    public void handle(CatBot bot, User user, UserSession session, TelegramMessage message) {
+        String text = message.text();
+        Long chatId = message.chatId();
         Long telegramId = user.getTelegramId();
 
-        if ("✅ Подтвердить".equals(text)) {
-            Cat cat = catService.saveCat(
+        if (BotConstants.CONFIRM_CAT_ACTION.equals(text)) {
+            Cat cat = catService.saveCat(new CatCreationDto(
                     session.getCatName(),
                     session.getPhotoUrl(),
-                    user
-            );
+                    user));
 
             sessionService.clearSession(telegramId);
 
-            bot.sendTextWithKeyBoard(chatId, "Котик \"" + cat.getName() + "\" успешно добавлен!",
+            bot.sendTextWithKeyboard(chatId, "Котик \"" + cat.getName() + "\" успешно добавлен!",
                     bot.createMainMenuKeyboard());
         }
-        else if ("❌ Отменить".equals(text)) {
+        else if (BotConstants.CANCEL_CAT_ACTION.equals(text)) {
             sessionService.clearSession(telegramId);
-            bot.sendTextWithKeyBoard(chatId, "Добавление котика отменено",
+            bot.sendTextWithKeyboard(chatId, "Добавление котика отменено",
                     bot.createMainMenuKeyboard());
         }
         else {

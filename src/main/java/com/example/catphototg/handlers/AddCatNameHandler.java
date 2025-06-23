@@ -1,6 +1,8 @@
 package com.example.catphototg.handlers;
 
 
+import com.example.catphototg.constants.BotConstants;
+import com.example.catphototg.dto.TelegramMessage;
 import com.example.catphototg.entity.User;
 import com.example.catphototg.entity.UserSession;
 import com.example.catphototg.entity.enums.UserState;
@@ -9,7 +11,6 @@ import com.example.catphototg.service.SessionService;
 import com.example.catphototg.tgbot.CatBot;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.objects.Update;
 
 
 @Component
@@ -18,33 +19,32 @@ public class AddCatNameHandler implements UpdateHandler {
     private final SessionService sessionService;
 
     @Override
-    public boolean canHandle(User user, UserSession session, Update update) {
+    public boolean canHandle(User user, UserSession session, TelegramMessage message) {
         return session != null &&
                 session.getState() == UserState.ADDING_CAT_NAME &&
-                update.hasMessage() &&
-                update.getMessage().hasText();
+                (message.isCallback() ||
+                message.hasText());
     }
 
     @Override
-    public void handle(CatBot bot, User user, UserSession session, Update update) {
-        String text = update.getMessage().getText();
-        Long chatId = update.getMessage().getChatId();
-        Long telegramId = user.getTelegramId();
+    public void handle(CatBot bot, User user, UserSession session, TelegramMessage message) {
+        Long chatId = message.chatId();
+        String text = message.text();
 
-        if ("❌ Отмена".equals(text)) {
-            sessionService.clearSession(telegramId);
-            bot.sendMainMenu(chatId, user);
+        if (message.isCallback()&&BotConstants.CANCEL_ACTION.equals(text)) {
+            sessionService.clearSession(user.getTelegramId());
+            bot.showMainMenu(chatId, user);
             return;
         }
 
         if (text.length() >= 2 && text.length() <= 30) {
-            sessionService.updateSession(telegramId, s -> {
+            sessionService.updateSession(message.userId(), s -> {
                 s.setCatName(text);
                 s.setState(UserState.ADDING_CAT_PHOTO);
             });
             bot.askForCatPhoto(chatId, user);
         } else {
-            bot.sendTextWithKeyBoard(chatId, "Имя котика должно быть от 2 до 30 символов. Попробуйте еще раз:",
+            bot.sendTextWithKeyboard(chatId, "Имя котика должно быть от 2 до 30 символов. Попробуйте еще раз:",
                     bot.createCancelKeyboard());
         }
     }

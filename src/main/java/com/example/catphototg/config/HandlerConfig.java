@@ -12,6 +12,7 @@ import java.util.List;
 public class HandlerConfig {
     @Bean
     public List<UpdateHandler> handlers(
+            StartCommandHandler startCommandHandler,
             MainMenuHandler mainMenuHandler,
             NameRegistrationHandler nameRegistrationHandler,
             AddCatNameHandler addCatNameHandler,
@@ -19,6 +20,7 @@ public class HandlerConfig {
             AddCatConfirmationHandler addCatConfirmationHandler
     ) {
         return Arrays.asList(
+                startCommandHandler,
                 nameRegistrationHandler,
                 mainMenuHandler,
                 addCatNameHandler,
