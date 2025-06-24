@@ -36,9 +36,4 @@ public class ReactionService {
             reactionRepository.save(newReaction);
         }
     }
-
-    @Transactional(readOnly = true)
-    public boolean hasReaction(User user, Cat cat, ReactionType type) {
-        return reactionRepository.existsByUserAndCatAndType(user, cat, type);
-    }
 }

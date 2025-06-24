@@ -8,10 +8,12 @@ import com.example.catphototg.entity.Cat;
 import com.example.catphototg.entity.User;
 import com.example.catphototg.entity.UserSession;
 import com.example.catphototg.entity.enums.UserState;
-import com.example.catphototg.handlers.interfaces.BotOperations;
+import com.example.catphototg.entity.ui.MessageData;
+import com.example.catphototg.handlers.interfaces.TelegramFacade;
 import com.example.catphototg.handlers.interfaces.UpdateHandler;
 import com.example.catphototg.service.CatService;
 import com.example.catphototg.service.KeyboardService;
+import com.example.catphototg.service.MessageFactory;
 import com.example.catphototg.service.SessionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -21,7 +23,8 @@ import org.springframework.stereotype.Component;
 public class AddCatConfirmationHandler implements UpdateHandler {
     private final SessionService sessionService;
     private final CatService catService;
-    private final BotOperations bot;
+    private final TelegramFacade bot;
+    private final MessageFactory messageFactory;
     private final KeyboardService keyboardService;
 
     @Override
@@ -45,13 +48,20 @@ public class AddCatConfirmationHandler implements UpdateHandler {
 
             sessionService.clearSession(telegramId);
 
-            bot.sendTextWithKeyboard(chatId, "Котик \"" + cat.getName() + "\" успешно добавлен!",
-                    keyboardService.mainMenuKeyboard());
+            String successText = "Котик \"" + cat.getName() + "\" успешно добавлен!";
+            MessageData successMessage = messageFactory.createTextMessage(
+                    successText,
+                    keyboardService.mainMenuKeyboard()
+            );
+            bot.sendTextWithKeyboard(chatId, successMessage);
         }
         else if (BotConstants.CANCEL_CAT_ACTION.equals(text)) {
             sessionService.clearSession(telegramId);
-            bot.sendTextWithKeyboard(chatId, "Добавление котика отменено",
-                    keyboardService.mainMenuKeyboard());
+            MessageData cancelMessage = messageFactory.createTextMessage(
+                    "Добавление котика отменено",
+                    keyboardService.mainMenuKeyboard()
+            );
+            bot.sendTextWithKeyboard(chatId, cancelMessage);
         }
         else {
             bot.showCatConfirmation(chatId, session,user);

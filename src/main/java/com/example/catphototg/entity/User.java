@@ -29,4 +29,8 @@ public class User {
 
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Cat> cats = new ArrayList<>();
+
+    public String displayName() {
+        return displayName;
+    }
 }

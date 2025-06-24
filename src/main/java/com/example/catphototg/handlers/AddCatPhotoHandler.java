@@ -6,9 +6,11 @@ import com.example.catphototg.dto.TelegramMessage;
 import com.example.catphototg.entity.User;
 import com.example.catphototg.entity.UserSession;
 import com.example.catphototg.entity.enums.UserState;
-import com.example.catphototg.handlers.interfaces.BotOperations;
+import com.example.catphototg.entity.ui.MessageData;
+import com.example.catphototg.handlers.interfaces.TelegramFacade;
 import com.example.catphototg.handlers.interfaces.UpdateHandler;
 import com.example.catphototg.service.KeyboardService;
+import com.example.catphototg.service.MessageFactory;
 import com.example.catphototg.service.SessionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -19,8 +21,9 @@ import java.io.File;
 @RequiredArgsConstructor
 public class AddCatPhotoHandler implements UpdateHandler {
     private final SessionService sessionService;
-    private final BotOperations bot;
+    private final TelegramFacade bot;
     private final KeyboardService keyboardService;
+    private final MessageFactory messageFactory;
 
     public boolean canHandle(User user, UserSession session, TelegramMessage message) {
         return session != null &&
@@ -59,8 +62,11 @@ public class AddCatPhotoHandler implements UpdateHandler {
             }
 
         } else {
-            bot.sendTextWithKeyboard(chatId, "Пожалуйста, отправьте фото котика:",
-                    keyboardService.cancelKeyboard());
+            MessageData promptMessage = messageFactory.createTextMessage(
+                    "Пожалуйста, отправьте фото котика:",
+                    keyboardService.cancelKeyboard()
+            );
+            bot.sendTextWithKeyboard(chatId, promptMessage);
         }
     }
 
