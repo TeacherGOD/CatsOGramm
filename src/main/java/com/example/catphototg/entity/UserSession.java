@@ -37,4 +37,8 @@ public class UserSession {
 
     @CreationTimestamp
     private LocalDateTime createdAt;
+
+    @Column(name = "current_page")
+    private Integer currentPage = 0;
+
 }

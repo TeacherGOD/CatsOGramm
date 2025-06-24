@@ -20,6 +20,13 @@ public class BotConstants {
     public static final String ADD_CAT_ACTION = "ADD_CAT";
     public static final String MY_CATS_ACTION = "MY_CATS";
     public static final String CHANGE_NAME_ACTION = "CHANGE_NAME";
+    public static final String NEXT_PAGE_ACTION = "NEXT_PAGE";
+    public static final String PREV_PAGE_ACTION = "PREV_PAGE";
+    public static final String BACK_TO_MENU_ACTION = "BACK_TO_MENU";
+    public static final String CAT_DETAILS_PREFIX = "CAT_";
+    public static final String PREV_PAGE_BUTTON = "⬅️ Назад";
+    public static final String BACK_TO_MENU_BUTTON = "В меню";
+    public static final String NEXT_PAGE_BUTTON = "Далее ➡️";
 
 
     private BotConstants() {

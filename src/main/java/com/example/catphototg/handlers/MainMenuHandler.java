@@ -6,6 +6,7 @@ import com.example.catphototg.entity.User;
 import com.example.catphototg.entity.UserSession;
 import com.example.catphototg.entity.enums.UserState;
 import com.example.catphototg.handlers.interfaces.UpdateHandler;
+import com.example.catphototg.service.NavigationService;
 import com.example.catphototg.service.SessionService;
 import com.example.catphototg.tgbot.CatBot;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,8 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class MainMenuHandler implements UpdateHandler {
     private final SessionService sessionService;
+    private final NavigationService navigationService;
+
 
     @Override
     public boolean canHandle(User user, UserSession session, TelegramMessage message) {
@@ -36,7 +39,8 @@ public class MainMenuHandler implements UpdateHandler {
                 break;
 
             case BotConstants.MY_CATS_ACTION:
-                bot.sendTextWithKeyboard(chatId, "Функция 'Мои котики' в разработке", bot.createMainMenuKeyboard());
+                sessionService.getOrCreateSession(user, UserState.BROWSING_MY_CATS);
+                navigationService.showCatsPage(bot, user, message.chatId(), 0);
                 break;
 
             case BotConstants.CHANGE_NAME_ACTION:

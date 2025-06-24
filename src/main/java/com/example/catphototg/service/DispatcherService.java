@@ -21,6 +21,7 @@ public class DispatcherService {
     private final SessionService sessionService;
     private final UserService userService;
     private final TelegramMessageMapper telegramMessageMapper;
+    private final NavigationService navigationService;
 
     public void dispatch(CatBot bot, Update update) {
         TelegramMessage message = telegramMessageMapper.toDto(update);
@@ -71,9 +72,12 @@ public class DispatcherService {
                 bot.askForName(chatId);
                 break;
             case BROWSING_MY_CATS:
-                // TODO: Реализовать позже
-                bot.sendTextWithKeyboard(chatId, "Продолжаем просмотр ваших котиков...",
-                        bot.createMainMenuKeyboard());
+                navigationService.showCatsPage(
+                        bot,
+                        user,
+                        chatId,
+                        session.getCurrentPage()
+                );
                 break;
             default:
                 bot.showMainMenu(chatId, user);
