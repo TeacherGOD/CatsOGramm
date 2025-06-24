@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -24,7 +23,7 @@ public class SessionService {
                     UserSession newSession = new UserSession();
                     newSession.setUser(user);
                     newSession.setState(initialState);
-                    return sessionRepository.save(newSession);
+                    return newSession;
                 });
         session.setState(initialState);
         sessionRepository.save(session);
@@ -44,18 +43,10 @@ public class SessionService {
     }
 
     public Optional<UserSession> findByUserTelegramId(Long telegramId) {
-        Optional<UserSession> session = sessionRepository.findByUserTelegramId(telegramId);
 
-        if (session.isPresent() && isExpired(session.get())) {
-            sessionRepository.delete(session.get());
-            return Optional.empty();
-        }
-        return session;
+        return sessionRepository.findByUserTelegramId(telegramId);
     }
 
-    private boolean isExpired(UserSession session) {
-        return session.getCreatedAt().isBefore(LocalDateTime.now().minusHours(2));
-    }
 
     @Transactional
     public UserSession updateAndGetSession(Long telegramId, Consumer<UserSession> updater) {

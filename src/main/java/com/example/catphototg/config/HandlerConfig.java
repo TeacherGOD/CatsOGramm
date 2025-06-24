@@ -17,7 +17,8 @@ public class HandlerConfig {
             NameRegistrationHandler nameRegistrationHandler,
             AddCatNameHandler addCatNameHandler,
             AddCatPhotoHandler addCatPhotoHandler,
-            AddCatConfirmationHandler addCatConfirmationHandler
+            AddCatConfirmationHandler addCatConfirmationHandler,
+            StateRestoreHandler stateRestoreHandler
     ) {
         return Arrays.asList(
                 startCommandHandler,
@@ -25,7 +26,8 @@ public class HandlerConfig {
                 mainMenuHandler,
                 addCatNameHandler,
                 addCatPhotoHandler,
-                addCatConfirmationHandler
+                addCatConfirmationHandler,
+                stateRestoreHandler
         );
     }
 }

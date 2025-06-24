@@ -1,12 +1,15 @@
 package com.example.catphototg.entity;
 
 
+import com.example.catphototg.entity.enums.ReactionType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "cats")
@@ -31,6 +34,12 @@ public class Cat {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    private Integer likes = 0;
-    private Integer dislikes = 0;
+    @OneToMany(mappedBy = "cat", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Reaction> reactions = new ArrayList<>();
+
+    public int getReactionCount(ReactionType type) {
+        return (int) reactions.stream()
+                .filter(r -> r.getType() == type)
+                .count();
+    }
 }

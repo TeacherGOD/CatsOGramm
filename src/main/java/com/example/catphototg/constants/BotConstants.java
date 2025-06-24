@@ -1,6 +1,6 @@
 package com.example.catphototg.constants;
 
-public class BotConstants {
+public final class BotConstants {
     public static final String CONFIRM_BUTTON = "✅ Подтвердить";
     public static final String CANCEL_BUTTON = "❌ Отмена";
     public static final String ADD_CAT_COMMAND = "➕ Добавить котика";
@@ -20,13 +20,26 @@ public class BotConstants {
     public static final String ADD_CAT_ACTION = "ADD_CAT";
     public static final String MY_CATS_ACTION = "MY_CATS";
     public static final String CHANGE_NAME_ACTION = "CHANGE_NAME";
+    public static final String NAME_CHANGED = "✅ Имя успешно изменено на: %s";
+    public static final String WELCOME_MESSAGE ="""
+        Привет, %s! Добро пожаловать в мир котиков! 😺
+
+        Здесь ты можешь:
+        - Добавлять фото своих котиков
+        - Смотреть котиков других пользователей
+        - Оценивать милых котиков
+
+        Начни прямо сейчас!""";
+    public static final String BROWSING_MY_CATS_TEXT = "Продолжаем просмотр ваших котиков...";
+    //для будущих вещей
     public static final String NEXT_PAGE_ACTION = "NEXT_PAGE";
     public static final String PREV_PAGE_ACTION = "PREV_PAGE";
     public static final String BACK_TO_MENU_ACTION = "BACK_TO_MENU";
     public static final String CAT_DETAILS_PREFIX = "CAT_";
+    public static final String REACTION_DETAILS_PREFIX = "REACTION_";
     public static final String PREV_PAGE_BUTTON = "⬅️ Назад";
-    public static final String BACK_TO_MENU_BUTTON = "В меню";
     public static final String NEXT_PAGE_BUTTON = "Далее ➡️";
+    public static final String BACK_TO_MENU_BUTTON = "В меню";
 
 
     private BotConstants() {

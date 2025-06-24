@@ -6,10 +6,11 @@ import com.example.catphototg.dto.TelegramMessage;
 import com.example.catphototg.entity.User;
 import com.example.catphototg.entity.UserSession;
 import com.example.catphototg.entity.enums.UserState;
+import com.example.catphototg.handlers.interfaces.BotOperations;
 import com.example.catphototg.handlers.interfaces.UpdateHandler;
 import com.example.catphototg.service.FileStorageService;
+import com.example.catphototg.service.KeyboardService;
 import com.example.catphototg.service.SessionService;
-import com.example.catphototg.tgbot.CatBot;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +21,8 @@ import java.io.File;
 public class AddCatPhotoHandler implements UpdateHandler {
     private final SessionService sessionService;
     private final FileStorageService fileStorageService;
+    private final BotOperations bot;
+    private final KeyboardService keyboardService;
 
     public boolean canHandle(User user, UserSession session, TelegramMessage message) {
         return session != null &&
@@ -29,7 +32,7 @@ public class AddCatPhotoHandler implements UpdateHandler {
     }
 
     @Override
-    public void handle(CatBot bot, User user, UserSession session, TelegramMessage message) {
+    public void handle(User user, UserSession session, TelegramMessage message) {
         String text = message.text();
         Long chatId = message.chatId();
         Long telegramId = user.getTelegramId();
@@ -60,7 +63,8 @@ public class AddCatPhotoHandler implements UpdateHandler {
 
         } else {
             bot.sendTextWithKeyboard(chatId, "Пожалуйста, отправьте фото котика:",
-                    bot.createCancelKeyboard());
+                    keyboardService.cancelKeyboard());
         }
     }
+
 }

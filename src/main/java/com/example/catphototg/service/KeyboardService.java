@@ -12,9 +12,30 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static com.example.catphototg.constants.BotConstants.*;
+
 @Service
 @RequiredArgsConstructor
 public class KeyboardService {
+
+    public InlineKeyboardMarkup mainMenuKeyboard() {
+        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+
+        List<InlineKeyboardButton> row1 = new ArrayList<>();
+        row1.add(createButton(SHOW_CATS_COMMAND, VIEW_CATS_ACTION));
+        row1.add(createButton(ADD_CAT_COMMAND, ADD_CAT_ACTION));
+
+        List<InlineKeyboardButton> row2 = new ArrayList<>();
+        row2.add(createButton(MY_CATS_COMMAND, MY_CATS_ACTION));
+        row2.add(createButton(CHANGE_NAME_COMMAND, CHANGE_NAME_ACTION));
+
+        rows.add(row1);
+        rows.add(row2);
+
+        markup.setKeyboard(rows);
+        return markup;
+    }
 
     public InlineKeyboardMarkup createCatsKeyboard(Page<Cat> catPage, int currentPage) {
         List<List<InlineKeyboardButton>> rows = new ArrayList<>();
@@ -36,28 +57,34 @@ public class KeyboardService {
 
         return new InlineKeyboardMarkup(rows);
     }
-
-    private InlineKeyboardButton createButton(String text, String callback) {
-        InlineKeyboardButton button = new InlineKeyboardButton(text);
-        button.setCallbackData(callback);
-        return button;
-    }
-    public InlineKeyboardMarkup createMainMenuKeyboard() {
+    public InlineKeyboardMarkup cancelKeyboard() {
         InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> rows = new ArrayList<>();
 
-        List<InlineKeyboardButton> row1 = new ArrayList<>();
-        row1.add(createButton(BotConstants.SHOW_CATS_COMMAND, BotConstants.VIEW_CATS_ACTION));
-        row1.add(createButton(BotConstants.ADD_CAT_COMMAND, BotConstants.ADD_CAT_ACTION));
+        List<InlineKeyboardButton> row = new ArrayList<>();
+        row.add(createButton(CANCEL_BUTTON, CANCEL_ACTION));
 
-        List<InlineKeyboardButton> row2 = new ArrayList<>();
-        row2.add(createButton(BotConstants.MY_CATS_COMMAND, BotConstants.MY_CATS_ACTION));
-        row2.add(createButton(BotConstants.CHANGE_NAME_COMMAND, BotConstants.CHANGE_NAME_ACTION));
-
-        rows.add(row1);
-        rows.add(row2);
-
+        rows.add(row);
         markup.setKeyboard(rows);
         return markup;
+    }
+
+    public InlineKeyboardMarkup confirmationKeyboard() {
+        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+
+        List<InlineKeyboardButton> row = new ArrayList<>();
+        row.add(createButton(CONFIRM_BUTTON, CONFIRM_CAT_ACTION));
+        row.add(createButton(CANCEL_BUTTON, CANCEL_CAT_ACTION));
+
+        rows.add(row);
+        markup.setKeyboard(rows);
+        return markup;
+    }
+
+    private InlineKeyboardButton createButton(String text, String callbackData) {
+        InlineKeyboardButton button = new InlineKeyboardButton(text);
+        button.setCallbackData(callbackData);
+        return button;
     }
 }
