@@ -1,0 +1,64 @@
+package com.example.catphototg.service;
+
+import org.springframework.stereotype.Service;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.example.catphototg.constants.BotConstants.*;
+
+@Service
+public class KeyboardService {
+
+    public InlineKeyboardMarkup mainMenuKeyboard() {
+        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+
+        List<InlineKeyboardButton> row1 = new ArrayList<>();
+        row1.add(createButton(SHOW_CATS_COMMAND, VIEW_CATS_ACTION));
+        row1.add(createButton(ADD_CAT_COMMAND, ADD_CAT_ACTION));
+
+        List<InlineKeyboardButton> row2 = new ArrayList<>();
+        row2.add(createButton(MY_CATS_COMMAND, MY_CATS_ACTION));
+        row2.add(createButton(CHANGE_NAME_COMMAND, CHANGE_NAME_ACTION));
+
+        rows.add(row1);
+        rows.add(row2);
+
+        markup.setKeyboard(rows);
+        return markup;
+    }
+
+    public InlineKeyboardMarkup cancelKeyboard() {
+        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+
+        List<InlineKeyboardButton> row = new ArrayList<>();
+        row.add(createButton(CANCEL_BUTTON, CANCEL_ACTION));
+
+        rows.add(row);
+        markup.setKeyboard(rows);
+        return markup;
+    }
+
+    public InlineKeyboardMarkup confirmationKeyboard() {
+        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+
+        List<InlineKeyboardButton> row = new ArrayList<>();
+        row.add(createButton(CONFIRM_BUTTON, CONFIRM_CAT_ACTION));
+        row.add(createButton(CANCEL_BUTTON, CANCEL_CAT_ACTION));
+
+        rows.add(row);
+        markup.setKeyboard(rows);
+        return markup;
+    }
+
+    private InlineKeyboardButton createButton(String text, String callbackData) {
+        InlineKeyboardButton button = new InlineKeyboardButton(text);
+        button.setCallbackData(callbackData);
+        return button;
+    }
+}

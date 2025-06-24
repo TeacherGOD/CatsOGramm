@@ -4,16 +4,17 @@ import com.example.catphototg.dto.TelegramMessage;
 import com.example.catphototg.entity.User;
 import com.example.catphototg.entity.UserSession;
 import com.example.catphototg.entity.enums.UserState;
-import com.example.catphototg.service.SessionService;
-import com.example.catphototg.tgbot.CatBot;
-import lombok.RequiredArgsConstructor;
+import com.example.catphototg.handlers.interfaces.BotOperations;
 import com.example.catphototg.handlers.interfaces.UpdateHandler;
+import com.example.catphototg.service.SessionService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
 public class StartCommandHandler implements UpdateHandler {
     private final SessionService sessionService;
+    private final BotOperations bot;
 
     @Override
     public boolean canHandle(User user, UserSession session, TelegramMessage message) {
@@ -21,7 +22,7 @@ public class StartCommandHandler implements UpdateHandler {
     }
 
     @Override
-    public void handle(CatBot bot, User user, UserSession session, TelegramMessage message) {
+    public void handle(User user, UserSession session, TelegramMessage message) {
         bot.showMainMenu(message.chatId(), user);
         sessionService.getOrCreateSession(user, UserState.MAIN_MENU);
     }

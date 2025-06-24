@@ -6,9 +6,10 @@ import com.example.catphototg.dto.TelegramMessage;
 import com.example.catphototg.entity.User;
 import com.example.catphototg.entity.UserSession;
 import com.example.catphototg.entity.enums.UserState;
+import com.example.catphototg.handlers.interfaces.BotOperations;
 import com.example.catphototg.handlers.interfaces.UpdateHandler;
+import com.example.catphototg.service.KeyboardService;
 import com.example.catphototg.service.SessionService;
-import com.example.catphototg.tgbot.CatBot;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -17,6 +18,8 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class AddCatNameHandler implements UpdateHandler {
     private final SessionService sessionService;
+    private final BotOperations bot;
+    private final KeyboardService keyboardService;
 
     @Override
     public boolean canHandle(User user, UserSession session, TelegramMessage message) {
@@ -27,7 +30,7 @@ public class AddCatNameHandler implements UpdateHandler {
     }
 
     @Override
-    public void handle(CatBot bot, User user, UserSession session, TelegramMessage message) {
+    public void handle(User user, UserSession session, TelegramMessage message) {
         Long chatId = message.chatId();
         String text = message.text();
 
@@ -45,7 +48,7 @@ public class AddCatNameHandler implements UpdateHandler {
             bot.askForCatPhoto(chatId, user);
         } else {
             bot.sendTextWithKeyboard(chatId, "Имя котика должно быть от 2 до 30 символов. Попробуйте еще раз:",
-                    bot.createCancelKeyboard());
+                    keyboardService.cancelKeyboard());
         }
     }
 }

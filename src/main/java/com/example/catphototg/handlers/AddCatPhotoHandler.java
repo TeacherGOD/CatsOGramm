@@ -6,16 +6,21 @@ import com.example.catphototg.dto.TelegramMessage;
 import com.example.catphototg.entity.User;
 import com.example.catphototg.entity.UserSession;
 import com.example.catphototg.entity.enums.UserState;
+import com.example.catphototg.handlers.interfaces.BotOperations;
 import com.example.catphototg.handlers.interfaces.UpdateHandler;
+import com.example.catphototg.service.KeyboardService;
 import com.example.catphototg.service.SessionService;
-import com.example.catphototg.tgbot.CatBot;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+
+import java.io.File;
 
 @Component
 @RequiredArgsConstructor
 public class AddCatPhotoHandler implements UpdateHandler {
     private final SessionService sessionService;
+    private final BotOperations bot;
+    private final KeyboardService keyboardService;
 
     public boolean canHandle(User user, UserSession session, TelegramMessage message) {
         return session != null &&
@@ -26,7 +31,7 @@ public class AddCatPhotoHandler implements UpdateHandler {
 
 
     @Override
-    public void handle(CatBot bot, User user, UserSession session, TelegramMessage message) {
+    public void handle(User user, UserSession session, TelegramMessage message) {
         String text = message.text();
         Long chatId = message.chatId();
         Long telegramId = user.getTelegramId();
@@ -40,13 +45,12 @@ public class AddCatPhotoHandler implements UpdateHandler {
         if (message.hasPhoto()) {
             try {
                 String filePath = bot.getFilePath(message.photoFileId());
-                String photoUrl = "https://api.telegram.org/file/bot" +
-                        bot.getBotToken() + "/" + filePath;
+                File fileData = bot.downloadBotFile(filePath);
+                //пока без сохранений, сделано в следующем коммите.
 
 
                 UserSession updatedSession = sessionService.updateAndGetSession(telegramId, s -> {
                     s.setPhotoFileId(message.photoFileId());
-                    s.setPhotoUrl(photoUrl);
                     s.setState(UserState.ADDING_CAT_CONFIRMATION);
                 });
                 bot.showCatConfirmation(chatId, updatedSession, user);
@@ -56,7 +60,7 @@ public class AddCatPhotoHandler implements UpdateHandler {
 
         } else {
             bot.sendTextWithKeyboard(chatId, "Пожалуйста, отправьте фото котика:",
-                    bot.createCancelKeyboard());
+                    keyboardService.cancelKeyboard());
         }
     }
 

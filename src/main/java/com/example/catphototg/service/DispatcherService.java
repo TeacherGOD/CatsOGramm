@@ -41,42 +41,14 @@ public class DispatcherService {
             return;
         }
 
+
         UserSession session = sessionOpt.orElse(null);
         for (UpdateHandler handler : handlers) {
             if (handler.canHandle(user, session, tgMessage)) {
-                handler.handle(bot, user, session, tgMessage);
+                handler.handle(user, session, tgMessage);
                 return;
             }
         }
-        restoreContext(bot, tgMessage.chatId(), user, session);
-    }
-
-    private void restoreContext(CatBot bot, Long chatId, User user, UserSession session) {
-        if (session == null) {
-            bot.showMainMenu(chatId, user);
-            return;
-        }
-
-        switch (session.getState()) {
-            case ADDING_CAT_NAME:
-                bot.askForCatName(chatId, user);
-                break;
-            case ADDING_CAT_PHOTO:
-                bot.askForCatPhoto(chatId, user);
-                break;
-            case ADDING_CAT_CONFIRMATION:
-                bot.showCatConfirmation(chatId, session, user);
-                break;
-            case REGISTERING_NAME,CHANGING_NAME:
-                bot.askForName(chatId);
-                break;
-            case BROWSING_MY_CATS:
-                // TODO: Реализовать позже
-                bot.sendTextWithKeyboard(chatId, "Продолжаем просмотр ваших котиков...",
-                        bot.createMainMenuKeyboard());
-                break;
-            default:
-                bot.showMainMenu(chatId, user);
-        }
+        bot.showMainMenu(tgMessage.chatId(), user);
     }
 }

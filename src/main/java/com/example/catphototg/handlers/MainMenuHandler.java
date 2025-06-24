@@ -5,9 +5,10 @@ import com.example.catphototg.dto.TelegramMessage;
 import com.example.catphototg.entity.User;
 import com.example.catphototg.entity.UserSession;
 import com.example.catphototg.entity.enums.UserState;
+import com.example.catphototg.handlers.interfaces.BotOperations;
 import com.example.catphototg.handlers.interfaces.UpdateHandler;
+import com.example.catphototg.service.KeyboardService;
 import com.example.catphototg.service.SessionService;
-import com.example.catphototg.tgbot.CatBot;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -15,6 +16,8 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class MainMenuHandler implements UpdateHandler {
     private final SessionService sessionService;
+    private final BotOperations bot;
+    private final KeyboardService keyboardService;
 
     @Override
     public boolean canHandle(User user, UserSession session, TelegramMessage message) {
@@ -23,7 +26,7 @@ public class MainMenuHandler implements UpdateHandler {
     }
 
     @Override
-    public void handle(CatBot bot, User user, UserSession session, TelegramMessage message) {
+    public void handle(User user, UserSession session, TelegramMessage message) {
         Long chatId = message.chatId();
         switch (message.text()) {
             case BotConstants.ADD_CAT_ACTION:
@@ -32,11 +35,11 @@ public class MainMenuHandler implements UpdateHandler {
                 break;
 
             case BotConstants.VIEW_CATS_ACTION:
-                bot.sendTextWithKeyboard(chatId, "Функция просмотра котиков в разработке", bot.createMainMenuKeyboard());
+                bot.sendTextWithKeyboard(chatId, "Функция просмотра котиков в разработке", keyboardService.mainMenuKeyboard());
                 break;
 
             case BotConstants.MY_CATS_ACTION:
-                bot.sendTextWithKeyboard(chatId, "Функция 'Мои котики' в разработке", bot.createMainMenuKeyboard());
+                bot.sendTextWithKeyboard(chatId, "Функция 'Мои котики' в разработке", keyboardService.mainMenuKeyboard());
                 break;
 
             case BotConstants.CHANGE_NAME_ACTION:
@@ -45,7 +48,7 @@ public class MainMenuHandler implements UpdateHandler {
                 break;
 
             default:
-                bot.sendTextWithKeyboard(chatId, "Пожалуйста, выберите действие", bot.createMainMenuKeyboard());
+                bot.sendTextWithKeyboard(chatId, "Пожалуйста, выберите действие", keyboardService.mainMenuKeyboard());
         }
     }
 }

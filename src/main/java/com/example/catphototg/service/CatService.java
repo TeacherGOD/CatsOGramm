@@ -16,7 +16,7 @@ public class CatService {
     public Cat saveCat(CatCreationDto dto) {
         Cat cat = new Cat();
         cat.setName(dto.name());
-        cat.setPhotoUrl(dto.photoUrl());
+        cat.setFilepath(dto.filepath());
         cat.setAuthor(dto.author());
         return catRepository.save(cat);
     }
