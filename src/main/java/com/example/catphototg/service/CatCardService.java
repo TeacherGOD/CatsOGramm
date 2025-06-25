@@ -48,7 +48,6 @@ public class CatCardService {
         MessageData messageData = messageFactory.createTextMessage(caption, keyboard);
 
         bot.sendPhotoFromFile(chatId, cat.getFilePath(), messageData);
-
     }
 
     public void handleBackAction(TelegramFacade bot, User user, Long chatId) {
@@ -75,7 +74,6 @@ public class CatCardService {
             return;
         }
 
-
         int currentPage = session.getCurrentPage();
         int totalPages = catService.getCatsByAuthor(user, 0, 9).getTotalPages();
 
@@ -83,12 +81,7 @@ public class CatCardService {
             currentPage = totalPages - 1;
         }
 
-<<<<<<< AddMycats
-        String successMsg = "Котик успешно удален ✅";
-=======
-        String successMsg = CAT_SUCCESS_DELETE_MESSAGE;
->>>>>>> feature
-        bot.sendText(chatId,messageFactory.createTextMessage(successMsg,null));
+        bot.sendText(chatId,messageFactory.createTextMessage(CAT_SUCCESS_DELETE_MESSAGE,null));
 
         int finalCurrentPage = currentPage;
         sessionService.updateSession(user.getTelegramId(), s -> {
