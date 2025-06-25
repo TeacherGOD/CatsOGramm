@@ -8,6 +8,8 @@ import com.example.catphototg.bot.entity.ui.MessageData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import static com.example.catphototg.bot.constants.BotConstants.*;
+
 
 @Service
 @RequiredArgsConstructor

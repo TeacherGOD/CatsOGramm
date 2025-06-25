@@ -1,9 +1,10 @@
 package com.example.catphototg.catservice.repository;
 
-import com.example.catphototg.catservice.entity.Cat;
 import com.example.catphototg.bot.entity.User;
+import com.example.catphototg.catservice.entity.Cat;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -20,4 +21,8 @@ public interface CatRepository extends JpaRepository<Cat,Long> {
             "ORDER BY RANDOM() " +
             "LIMIT 1")
     Optional<Cat> findRandomUnseenCat(@Param("userId") Long userId);
+
+    int countByAuthorId(Long userId);
+
+    Page<Cat> findByAuthorId(Long authorId, Pageable pageable);
 }

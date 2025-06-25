@@ -25,6 +25,10 @@ public class CatController {
         catService.deleteCatById(id, userId);
     }
 
+    @GetMapping("/count")
+    public int getCatsCount(@RequestParam Long userId) {
+        return catService.getCatsCountByAuthor(userId);
+    }
 
     // Другие методы по необходимости
 }

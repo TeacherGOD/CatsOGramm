@@ -1,8 +1,9 @@
 package com.example.catphototg.catservice.service;
 
-import com.example.catphototg.catservice.dto.CatCreationDto;
-import com.example.catphototg.catservice.entity.Cat;
 import com.example.catphototg.bot.entity.User;
+import com.example.catphototg.catservice.dto.CatCreationDto;
+import com.example.catphototg.catservice.dto.CatDto;
+import com.example.catphototg.catservice.entity.Cat;
 import com.example.catphototg.catservice.exceptions.CatNotFoundException;
 import com.example.catphototg.catservice.repository.CatRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.Optional;
 
 @Service
@@ -23,12 +25,28 @@ public class CatService {
     private final FileStorageService fileStorageService;
 
     @Transactional
-    public Cat saveCat(CatCreationDto dto) {
+    public CatDto  saveCat(CatCreationDto dto) {
         Cat cat = new Cat();
         cat.setName(dto.name());
         cat.setFilePath(dto.filepath());
-        cat.setAuthor(dto.author());
-        return catRepository.save(cat);
+        var author=new User();
+        author.setId(dto.authorId());
+        cat.setAuthor(author);
+
+        Cat savedCat = catRepository.save(cat);
+
+        return new CatDto(
+                savedCat.getId(),
+                savedCat.getName(),
+                savedCat.getFilePath(),
+                dto.authorName(),
+                new HashMap<>(),
+                new HashMap<>()
+        );
+    }
+
+    public int getCatsCountByAuthor(Long userId) {
+        return catRepository.countByAuthorId(userId);
     }
 
     @Transactional(readOnly = true)

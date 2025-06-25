@@ -25,6 +25,7 @@ public class CatCardService {
     private final MessageFactory messageFactory;
     private final SessionService sessionService;
     private final NavigationService navigationService;
+    private final CatServiceClient catServiceClient;
 
     public void showCatCard(TelegramFacade bot, User user, Long catId, Long chatId) {
         Cat cat;
@@ -70,30 +71,48 @@ public class CatCardService {
             bot.handleError(chatId, "Не выбран котик для удаления", null, user);
             return;
         }
-
-        boolean deleted = catService.deleteCatById(session.getViewingCatId(), user);
-        if (!deleted) {
-            bot.handleError(chatId, "Не удалось удалить котика", null, user);
-            return;
-        }
-
-
+        Long catIdToDelete = session.getViewingCatId();
         int currentPage = session.getCurrentPage();
-        int totalPages = catService.getCatsByAuthor(user, 0, 9).getTotalPages();
 
+        bot.sendText(chatId, new MessageData("Начинаем удаление котика...",null));
+
+        catServiceClient.deleteCatAsync(catIdToDelete, user.getId())
+                .thenAccept(deleted -> {
+                    if (deleted) {
+                        updateUIAfterDeletion(bot, user, chatId, currentPage);
+                    } else {
+                        bot.handleError(chatId, "Не удалось удалить котика", null, user);
+                    }
+                })
+                .exceptionally(ex -> {
+                    bot.handleError(chatId, "Ошибка при удалении котика", ex, user);
+                    return null;
+                });
+    }
+
+    private void updateUIAfterDeletion(TelegramFacade bot, User user, Long chatId,
+                                       int currentPage) {
+
+        catServiceClient.getCatsCountAsync(user.getId())
+                .thenAccept(totalPages -> {
+                    int newPage = calculateNewPage(currentPage, totalPages);
+
+                    sessionService.updateSession(user.getTelegramId(), s -> {
+                        s.setViewingCatId(null);
+                        s.setCurrentPage(newPage);
+                        s.setState(UserState.BROWSING_MY_CATS);
+                    });
+
+                    String successMsg = "Котик успешно удален ✅";
+                    bot.sendText(chatId, messageFactory.createTextMessage(successMsg, null));
+
+                    navigationService.showCatsPage(bot, user, chatId, newPage);
+                });
+    }
+    private int calculateNewPage(int currentPage, int totalPages) {
         if (currentPage >= totalPages && totalPages > 0) {
-            currentPage = totalPages - 1;
+            return totalPages - 1;
         }
-
-        String successMsg = "Котик успешно удален ✅";
-        bot.sendText(chatId,messageFactory.createTextMessage(successMsg,null));
-
-        int finalCurrentPage = currentPage;
-        sessionService.updateSession(user.getTelegramId(), s -> {
-            s.setViewingCatId(null);
-            s.setCurrentPage(finalCurrentPage);
-            s.setState(UserState.BROWSING_MY_CATS);
-        });
-        navigationService.showCatsPage(bot,user,chatId,currentPage);
+        return currentPage;
     }
 }
