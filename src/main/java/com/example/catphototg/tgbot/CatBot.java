@@ -94,9 +94,6 @@ public class CatBot extends TelegramLongPollingBot  implements TelegramFacade {
         }
     }
 
-
-
-
     @Override
     public void sendTextWithKeyboard(Long chatId, MessageData messageData) {
         try {
@@ -126,7 +123,6 @@ public class CatBot extends TelegramLongPollingBot  implements TelegramFacade {
     public String getBotToken() {
         return botProperties.getToken();
     }
-
 
     @Override
     public File downloadBotFile(String filePath) throws BotOperationException {
