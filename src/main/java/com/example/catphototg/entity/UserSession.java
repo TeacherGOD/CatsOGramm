@@ -32,6 +32,16 @@ public class UserSession {
     @Column(name = "photo_file_id")
     private String photoFileId;
 
+    @Column(name = "file_path")
+    private String filePath;
+
     @CreationTimestamp
     private LocalDateTime createdAt;
+
+    @Column(name = "current_page")
+    private Integer currentPage = 0;
+
+    @Column(name = "viewing_cat_id")
+    private Long viewingCatId;
+
 }

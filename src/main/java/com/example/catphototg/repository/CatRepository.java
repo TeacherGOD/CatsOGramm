@@ -1,10 +1,23 @@
 package com.example.catphototg.repository;
 
 import com.example.catphototg.entity.Cat;
+import com.example.catphototg.entity.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
-import java.util.List;
+import java.util.Optional;
 
 public interface CatRepository extends JpaRepository<Cat,Long> {
-    List<Cat> findByAuthorId(Long authorId);
+
+    Page<Cat> findByAuthor(User author, PageRequest pageable);
+
+    @Query("SELECT c FROM Cat c " +
+            "JOIN FETCH c.author " + // Добавляем JOIN FETCH для загрузки автора
+            "WHERE NOT EXISTS (SELECT 1 FROM Reaction r WHERE r.user.id = :userId AND r.cat.id = c.id) " +
+            "ORDER BY RANDOM() " +
+            "LIMIT 1")
+    Optional<Cat> findRandomUnseenCat(@Param("userId") Long userId);
 }

@@ -31,8 +31,8 @@ public record CatDto(
         return new CatDto(
                 cat.getId(),
                 cat.getName(),
-                cat.getFilepath(),
-                cat.getAuthor().getDisplayName(),
+                cat.getFilePath(),
+                cat.getAuthor().getUsername(),
                 counts,
                 userReactions
         );
