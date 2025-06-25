@@ -7,7 +7,7 @@ import com.example.catphototg.bot.entity.UserSession;
 import com.example.catphototg.bot.handlers.interfaces.TelegramFacade;
 import com.example.catphototg.bot.handlers.interfaces.UpdateHandler;
 import com.example.catphototg.bot.service.SessionService;
-import com.example.catphototg.catservice.service.CatCardService;
+import com.example.catphototg.bot.service.CatCardService;
 import com.example.catphototg.bot.entity.enums.UserState;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

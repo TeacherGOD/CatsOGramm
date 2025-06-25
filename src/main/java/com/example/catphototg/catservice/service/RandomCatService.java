@@ -21,7 +21,7 @@ public class RandomCatService {
     @Transactional(readOnly = true)
     public Optional<CatDto> getRandomCatForUser(User user) {
         return catService.findRandomUnseenCat(user.getId())
-                .map(cat -> CatDto.fromEntity(cat, user.getId()));
+                .map(CatDto::fromEntity);
     }
 
     public void processReaction(User user, Long catId, ReactionType type) throws ReactionException {

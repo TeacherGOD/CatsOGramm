@@ -1,9 +1,5 @@
-package com.example.catphototg.catservice.service;
+package com.example.catphototg.bot.service;
 
-import com.example.catphototg.bot.service.KeyboardService;
-import com.example.catphototg.bot.service.MessageFactory;
-import com.example.catphototg.bot.service.NavigationService;
-import com.example.catphototg.bot.service.SessionService;
 import com.example.catphototg.catservice.entity.Cat;
 import com.example.catphototg.bot.entity.User;
 import com.example.catphototg.bot.entity.UserSession;
@@ -12,6 +8,8 @@ import com.example.catphototg.bot.entity.ui.Keyboard;
 import com.example.catphototg.bot.entity.ui.MessageData;
 import com.example.catphototg.catservice.exceptions.CatNotFoundException;
 import com.example.catphototg.bot.handlers.interfaces.TelegramFacade;
+import com.example.catphototg.catservice.service.CatService;
+import com.example.catphototg.catservice.service.CatServiceClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -85,7 +83,7 @@ public class CatCardService {
                     }
                 })
                 .exceptionally(ex -> {
-                    bot.handleError(chatId, "Ошибка при удалении котика", ex, user);
+                    bot.handleError(chatId, "Ошибка при удалении котика", (Exception) ex, user);
                     return null;
                 });
     }
