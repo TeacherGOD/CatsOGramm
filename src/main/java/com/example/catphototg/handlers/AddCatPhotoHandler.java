@@ -6,10 +6,13 @@ import com.example.catphototg.dto.TelegramMessage;
 import com.example.catphototg.entity.User;
 import com.example.catphototg.entity.UserSession;
 import com.example.catphototg.entity.enums.UserState;
-import com.example.catphototg.handlers.interfaces.BotOperations;
+import com.example.catphototg.entity.ui.MessageData;
+import com.example.catphototg.handlers.interfaces.TelegramFacade;
 import com.example.catphototg.handlers.interfaces.UpdateHandler;
 import com.example.catphototg.service.FileStorageService;
+import com.example.catphototg.service.FileStorageService;
 import com.example.catphototg.service.KeyboardService;
+import com.example.catphototg.service.MessageFactory;
 import com.example.catphototg.service.SessionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -20,9 +23,10 @@ import java.io.File;
 @RequiredArgsConstructor
 public class AddCatPhotoHandler implements UpdateHandler {
     private final SessionService sessionService;
-    private final FileStorageService fileStorageService;
-    private final BotOperations bot;
+    private final TelegramFacade bot;
     private final KeyboardService keyboardService;
+    private final MessageFactory messageFactory;
+    private final FileStorageService fileStorageService;
 
     public boolean canHandle(User user, UserSession session, TelegramMessage message) {
         return session != null &&
@@ -45,14 +49,14 @@ public class AddCatPhotoHandler implements UpdateHandler {
 
         if (message.hasPhoto()) {
             try {
-                String fileId = message.photoFileId();
-                String filePath = bot.getFilePath(fileId);
-                File fileData = bot.downloadFile(filePath);
+                String filePath = bot.getFilePath(message.photoFileId());
+                File fileData = bot.downloadBotFile(filePath);
+                //пока без сохранений, сделано в следующем коммите.
 
                 String storedFilename = fileStorageService.store(fileData);
 
                 UserSession updatedSession = sessionService.updateAndGetSession(telegramId, s -> {
-                    s.setPhotoFileId(fileId);
+                    s.setPhotoFileId(message.photoFileId());
                     s.setFilePath(storedFilename);
                     s.setState(UserState.ADDING_CAT_CONFIRMATION);
                 });
@@ -62,8 +66,11 @@ public class AddCatPhotoHandler implements UpdateHandler {
             }
 
         } else {
-            bot.sendTextWithKeyboard(chatId, "Пожалуйста, отправьте фото котика:",
-                    keyboardService.cancelKeyboard());
+            MessageData promptMessage = messageFactory.createTextMessage(
+                    "Пожалуйста, отправьте фото котика:",
+                    keyboardService.cancelKeyboard()
+            );
+            bot.sendTextWithKeyboard(chatId, promptMessage);
         }
     }
 

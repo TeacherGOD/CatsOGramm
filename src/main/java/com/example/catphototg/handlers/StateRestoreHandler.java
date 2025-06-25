@@ -3,9 +3,12 @@ package com.example.catphototg.handlers;
 import com.example.catphototg.dto.TelegramMessage;
 import com.example.catphototg.entity.User;
 import com.example.catphototg.entity.UserSession;
-import com.example.catphototg.handlers.interfaces.BotOperations;
+import com.example.catphototg.entity.enums.UserState;
+import com.example.catphototg.entity.ui.MessageData;
+import com.example.catphototg.handlers.interfaces.TelegramFacade;
 import com.example.catphototg.handlers.interfaces.UpdateHandler;
 import com.example.catphototg.service.KeyboardService;
+import com.example.catphototg.service.MessageFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -14,12 +17,15 @@ import static com.example.catphototg.constants.BotConstants.BROWSING_MY_CATS_TEX
 @Component
 @RequiredArgsConstructor
 public class StateRestoreHandler implements UpdateHandler {
-    private final BotOperations bot;
+    private final TelegramFacade bot;
     private final KeyboardService keyboardService;
+    private final MessageFactory messageFactory;
 
     @Override
     public boolean canHandle(User user, UserSession session, TelegramMessage message) {
-        return session != null && message.text() == null;
+        return session != null &&
+                session.getState() != UserState.MAIN_MENU &&
+                !message.isCallback();
     }
 
     @Override
@@ -38,9 +44,11 @@ public class StateRestoreHandler implements UpdateHandler {
                 bot.askForName(message.chatId());
                 break;
             case BROWSING_MY_CATS:
-                bot.sendTextWithKeyboard(message.chatId(),
+                MessageData browsingMessage = messageFactory.createTextMessage(
                         BROWSING_MY_CATS_TEXT,
-                        keyboardService.mainMenuKeyboard());
+                        keyboardService.mainMenuKeyboard()
+                );
+                bot.sendTextWithKeyboard(message.chatId(), browsingMessage);
                 break;
             default:
                 bot.showMainMenu(message.chatId(), user);
