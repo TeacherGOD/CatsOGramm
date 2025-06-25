@@ -10,7 +10,6 @@ import com.example.catphototg.entity.ui.MessageData;
 import com.example.catphototg.handlers.interfaces.TelegramFacade;
 import com.example.catphototg.handlers.interfaces.UpdateHandler;
 import com.example.catphototg.service.FileStorageService;
-import com.example.catphototg.service.FileStorageService;
 import com.example.catphototg.service.KeyboardService;
 import com.example.catphototg.service.MessageFactory;
 import com.example.catphototg.service.SessionService;
@@ -51,17 +50,18 @@ public class AddCatPhotoHandler implements UpdateHandler {
             try {
                 String filePath = bot.getFilePath(message.photoFileId());
                 File fileData = bot.downloadBotFile(filePath);
-                //пока без сохранений, сделано в следующем коммите.
-
                 String storedFilename = fileStorageService.store(fileData);
 
                 UserSession updatedSession = sessionService.updateAndGetSession(telegramId, s -> {
                     s.setPhotoFileId(message.photoFileId());
                     s.setFilePath(storedFilename);
+                    s.setPhotoFileId(message.photoFileId());
                     s.setState(UserState.ADDING_CAT_CONFIRMATION);
                 });
-                bot.showCatConfirmation(chatId, updatedSession, user);
+                MessageData messageData = messageFactory.createCatConfirmationMessage(user, updatedSession);
+                bot.sendPhotoWithKeyboard(chatId, updatedSession.getPhotoFileId(), messageData);
             } catch (Exception e) {
+                sessionService.clearSession(user.getTelegramId());
                 bot.handleError(chatId, "Ошибка обработки фото", e,user);
             }
 

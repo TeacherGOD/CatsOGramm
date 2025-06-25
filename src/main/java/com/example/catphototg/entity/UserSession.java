@@ -41,4 +41,7 @@ public class UserSession {
     @Column(name = "current_page")
     private Integer currentPage = 0;
 
+    @Column(name = "viewing_cat_id")
+    private Long viewingCatId;
+
 }

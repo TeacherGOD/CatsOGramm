@@ -18,7 +18,12 @@ public class HandlerConfig {
             AddCatNameHandler addCatNameHandler,
             AddCatPhotoHandler addCatPhotoHandler,
             AddCatConfirmationHandler addCatConfirmationHandler,
-            StateRestoreHandler stateRestoreHandler
+            CatDetailsHandler catDetailsHandler,
+            CatCardActionHandler catCardActionHandler,
+            MyCatsHandler myCatsHandler,
+            StateRestoreHandler stateRestoreHandler,
+            ViewCatsHandler viewCatsHandler,
+            ReactionHandler reactionHandler
     ) {
         return Arrays.asList(
                 startCommandHandler,
@@ -26,7 +31,12 @@ public class HandlerConfig {
                 mainMenuHandler,
                 addCatNameHandler,
                 addCatPhotoHandler,
+                catDetailsHandler,
+                catCardActionHandler,
                 addCatConfirmationHandler,
+                myCatsHandler,
+                viewCatsHandler,
+                reactionHandler,
                 stateRestoreHandler
         );
     }

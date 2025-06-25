@@ -23,7 +23,7 @@ public class FileStorageService {
             Files.copy(file.toPath(), rootLocation.resolve(filename));
             return filename;
         } catch (Exception e) {
-            throw new StorageException("Failed to store file: " + e.getMessage(), e);
+            throw new StorageException("Не удалось сохранить файл: " + e.getMessage(), e);
         }
     }
 
@@ -36,7 +36,17 @@ public class FileStorageService {
         try {
             Files.createDirectories(rootLocation);
         } catch (IOException e) {
-            throw new StorageInitializationException("Could not initialize storage", e);
+            throw new StorageInitializationException("Не удалось инициализировать папку", e);
+        }
+    }
+
+    public void delete(String filePath) {
+        if (filePath == null || filePath.isEmpty()) return;
+        try {
+            Path path = rootLocation.resolve(filePath);
+            Files.deleteIfExists(path);
+        } catch (IOException e) {
+            throw new StorageException("Не удалось удалить файл:" + e.getMessage(), e);
         }
     }
 }

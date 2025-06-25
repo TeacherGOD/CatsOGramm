@@ -8,6 +8,8 @@ import com.example.catphototg.entity.ui.MessageData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import static com.example.catphototg.constants.BotConstants.*;
+
 
 @Service
 @RequiredArgsConstructor
@@ -24,12 +26,13 @@ public class MessageFactory {
     }
 
     public MessageData createNameRegistrationPrompt() {
-        return new MessageData(BotConstants.NAME_REGISTRATION_PROMPT, keyboardService.cancelKeyboard());
+        return new MessageData(NAME_REGISTRATION_PROMPT, keyboardService.cancelKeyboard());
     }
 
     public MessageData createErrorMessage(User user, String errorDetails) {
-        String text = "😿 Упс, " + user.displayName() +
-                ", произошла ошибка: " + errorDetails;
+        String userName = (user != null && user.getDisplayName() != null) ?
+                user.getDisplayName() : "Пользователь";
+        String text = "😿 Упс, " + userName + ", произошла ошибка: " + errorDetails;
         return new MessageData(text, keyboardService.mainMenuKeyboard());
     }
 
@@ -44,9 +47,9 @@ public class MessageFactory {
     }
 
     public MessageData createCatConfirmationMessage(User user, UserSession session) {
-        String caption = user.getDisplayName() + ", " +
-                BotConstants.CAT_CONFIRMATION_PROMPT +
-                session.getCatName();
+        String caption = String.format(
+                CAT_CONFIRMATION_PROMPT,user.getDisplayName(),
+                session.getCatName(),user.getUsername());
         return new MessageData(caption, keyboardService.confirmationKeyboard());
     }
 }

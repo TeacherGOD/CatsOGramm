@@ -1,35 +1,37 @@
 package com.example.catphototg.handlers;
 
+import com.example.catphototg.constants.BotConstants;
 import com.example.catphototg.dto.TelegramMessage;
 import com.example.catphototg.entity.User;
 import com.example.catphototg.entity.UserSession;
-import com.example.catphototg.entity.enums.UserState;
 import com.example.catphototg.handlers.interfaces.TelegramFacade;
 import com.example.catphototg.handlers.interfaces.UpdateHandler;
-import com.example.catphototg.service.NavigationService;
+import com.example.catphototg.service.CatCardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class MyCatsHandler implements UpdateHandler {
-    private final NavigationService navigationService;
+public class CatDetailsHandler implements UpdateHandler {
+    private final CatCardService catCardService;
     private final TelegramFacade bot;
 
     @Override
     public boolean canHandle(User user, UserSession session, TelegramMessage message) {
-        return session != null &&
-                session.getState() == UserState.BROWSING_MY_CATS &&
-                message.isCallback();
+        return message.isCallback() &&
+                message.text().startsWith(BotConstants.CAT_DETAILS_PREFIX);
     }
 
     @Override
-    public void handle( User user, UserSession session, TelegramMessage message) {
+    public void handle(User user, UserSession session, TelegramMessage message) {
+        String catIdStr = message.text().substring(BotConstants.CAT_DETAILS_PREFIX.length());
+        long catId = Long.parseLong(catIdStr);
 
-        navigationService.handleMyCatsNavigation(
+        catCardService.showCatCard(
                 bot,
                 user,
-                message.text(),
+                catId,
+                session.getCurrentPage(),
                 message.chatId()
         );
     }

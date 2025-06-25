@@ -4,7 +4,9 @@ import com.example.catphototg.constants.BotConstants;
 import com.example.catphototg.entity.Cat;
 import com.example.catphototg.entity.User;
 import com.example.catphototg.entity.UserSession;
-import com.example.catphototg.tgbot.CatBot;
+import com.example.catphototg.entity.ui.Keyboard;
+import com.example.catphototg.entity.ui.MessageData;
+import com.example.catphototg.handlers.interfaces.TelegramFacade;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -14,9 +16,10 @@ import org.springframework.stereotype.Service;
 public class NavigationService {
     private final CatService catService;
     private final SessionService sessionService;
-    private final BotMessageService botMessageService;
+    private final MessageFactory messageFactory;
+    private final KeyboardService keyboardService;
 
-    public void handleMyCatsNavigation(CatBot bot, User user, String callbackData, Long chatId) {
+    public void handleMyCatsNavigation(TelegramFacade bot, User user, String callbackData, Long chatId) {
         UserSession session = sessionService.findByUserTelegramId(user.getTelegramId())
                 .orElseThrow();
 
@@ -28,7 +31,7 @@ public class NavigationService {
                 handlePrevPage(bot, user, session, chatId);
                 break;
             case BotConstants.BACK_TO_MENU_ACTION:
-                botMessageService.sendMainMenu(bot, chatId, user);
+                bot.showMainMenu(chatId, user);
                 sessionService.clearSession(user.getTelegramId());
                 break;
             default:
@@ -36,13 +39,13 @@ public class NavigationService {
         }
     }
 
-    private void handleNextPage(CatBot bot, User user, UserSession session, Long chatId) {
+    private void handleNextPage(TelegramFacade bot, User user, UserSession session, Long chatId) {
         int nextPage = session.getCurrentPage() + 1;
         sessionService.updateSession(user.getTelegramId(), s -> s.setCurrentPage(nextPage));
         showCatsPage(bot, user, chatId, nextPage);
     }
 
-    private void handlePrevPage(CatBot bot, User user, UserSession session, Long chatId) {
+    private void handlePrevPage(TelegramFacade bot, User user, UserSession session, Long chatId) {
         if (session.getCurrentPage() > 0) {
             int prevPage = session.getCurrentPage() - 1;
             sessionService.updateSession(user.getTelegramId(), s -> s.setCurrentPage(prevPage));
@@ -50,8 +53,12 @@ public class NavigationService {
         }
     }
 
-    public void showCatsPage(CatBot bot, User user, Long chatId, int page) {
+    public void showCatsPage(TelegramFacade bot, User user, Long chatId, int page) {
         Page<Cat> catPage = catService.getCatsByAuthor(user, page, 9);
-        botMessageService.sendCatsPage(bot, chatId, catPage, page);
+        String message = "Ваши котики (страница " + (page + 1) + "):";
+        Keyboard keyboard = keyboardService.createCatsKeyboard(catPage, page);
+        MessageData messageData = messageFactory.createTextMessage(message, keyboard);
+
+        bot.sendTextWithKeyboard(chatId, messageData);
     }
 }

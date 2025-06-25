@@ -104,7 +104,7 @@ public class NameRegistrationHandler implements UpdateHandler {
 
     private void sendNameValidationError(Long chatId) {
         MessageData errorMessage = messageFactory.createTextMessage(
-                "Имя должно быть от 2 до 30 символов. Попробуйте еще раз:",
+                NAME_ERROR_MESSAGE,
                 keyboardService.cancelKeyboard()
         );
         bot.sendTextWithKeyboard(chatId, errorMessage);

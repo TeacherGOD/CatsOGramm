@@ -21,7 +21,6 @@ public class DispatcherService {
     private final SessionService sessionService;
     private final UserService userService;
     private final TelegramMessageMapper telegramMessageMapper;
-    private final NavigationService navigationService;
 
     public void dispatch(CatBot bot, Update update) {
         TelegramMessage message = telegramMessageMapper.toDto(update);

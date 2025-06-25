@@ -15,6 +15,8 @@ import com.example.catphototg.service.SessionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import static com.example.catphototg.constants.BotConstants.*;
+
 
 @Component
 @RequiredArgsConstructor
@@ -51,7 +53,7 @@ public class AddCatNameHandler implements UpdateHandler {
             bot.askForCatPhoto(chatId, user);
         } else {
             MessageData errorMessage = messageFactory.createTextMessage(
-                    "Имя котика должно быть от 2 до 30 символов. Попробуйте еще раз:",
+                    CAT_NAME_ERROR_MESSAGE,
                     keyboardService.cancelKeyboard()
             );
             bot.sendTextWithKeyboard(chatId, errorMessage);

@@ -1,7 +1,6 @@
 package com.example.catphototg.handlers;
 
 
-import com.example.catphototg.constants.BotConstants;
 import com.example.catphototg.dto.CatCreationDto;
 import com.example.catphototg.dto.TelegramMessage;
 import com.example.catphototg.entity.Cat;
@@ -17,6 +16,8 @@ import com.example.catphototg.service.MessageFactory;
 import com.example.catphototg.service.SessionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+
+import static com.example.catphototg.constants.BotConstants.*;
 
 @Component
 @RequiredArgsConstructor
@@ -40,7 +41,7 @@ public class AddCatConfirmationHandler implements UpdateHandler {
         Long chatId = message.chatId();
         Long telegramId = user.getTelegramId();
 
-        if (BotConstants.CONFIRM_CAT_ACTION.equals(text)) {
+        if (CONFIRM_CAT_ACTION.equals(text)) {
             Cat cat = catService.saveCat(new CatCreationDto(
                     session.getCatName(),
                     session.getFilePath(),
@@ -55,16 +56,17 @@ public class AddCatConfirmationHandler implements UpdateHandler {
             );
             bot.sendTextWithKeyboard(chatId, successMessage);
         }
-        else if (BotConstants.CANCEL_CAT_ACTION.equals(text)) {
+        else if (CANCEL_CAT_ACTION.equals(text)) {
             sessionService.clearSession(telegramId);
             MessageData cancelMessage = messageFactory.createTextMessage(
-                    "Добавление котика отменено",
+                    CANCEL_ADD_CAT_MESSAGE,
                     keyboardService.mainMenuKeyboard()
             );
             bot.sendTextWithKeyboard(chatId, cancelMessage);
         }
         else {
-            bot.showCatConfirmation(chatId, session,user);
+            MessageData messageData = messageFactory.createCatConfirmationMessage(user, session);
+            bot.sendPhotoWithKeyboard(chatId, session.getPhotoFileId(), messageData);
         }
     }
 }

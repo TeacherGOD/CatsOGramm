@@ -25,6 +25,7 @@ public class MainMenuHandler implements UpdateHandler {
     private final KeyboardService keyboardService;
     private final NavigationService navigationService;
     private final MessageFactory messageFactory;
+    private final ViewCatsHandler viewCatsHandler;
 
     @Override
     public boolean canHandle(User user, UserSession session, TelegramMessage message) {
@@ -42,19 +43,17 @@ public class MainMenuHandler implements UpdateHandler {
                 break;
 
             case VIEW_CATS_ACTION:
-                MessageData viewCatsMessage = messageFactory.createTextMessage(
-                        "Функция просмотра котиков в разработке",
-                        keyboardService.mainMenuKeyboard()
-                );
-                bot.sendTextWithKeyboard(chatId, viewCatsMessage);
+                sessionService.getOrCreateSession(user, UserState.VIEWING_RANDOM_CAT);
+                viewCatsHandler.showRandomCat(user, chatId);
                 break;
 
             case MY_CATS_ACTION:
-                MessageData myCatsMessage = messageFactory.createTextMessage(
-                        "Функция 'Мои котики' в разработке",
-                        keyboardService.mainMenuKeyboard()
+                sessionService.getOrCreateSession(
+                        user,
+                        UserState.BROWSING_MY_CATS
                 );
-                bot.sendTextWithKeyboard(chatId, myCatsMessage);
+                sessionService.updateSession(user.getTelegramId(),s->s.setCurrentPage(0));
+                navigationService.showCatsPage(bot, user, chatId, 0);
                 break;
 
             case CHANGE_NAME_ACTION:
@@ -64,7 +63,7 @@ public class MainMenuHandler implements UpdateHandler {
 
             default:
                 MessageData defaultMessage = messageFactory.createTextMessage(
-                        "Пожалуйста, выберите действие",
+                        DEFAULT_MESSAGE,
                         keyboardService.mainMenuKeyboard()
                 );
                 bot.sendTextWithKeyboard(chatId, defaultMessage);
