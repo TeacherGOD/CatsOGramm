@@ -25,7 +25,7 @@ public class Cat {
     private String name;
 
     @Column(name = "file_path", nullable = false)
-    private String filepath;
+    private String filePath;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "author_id", nullable = false)
