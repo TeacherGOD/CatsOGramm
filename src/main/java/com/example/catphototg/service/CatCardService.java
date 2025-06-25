@@ -11,7 +11,8 @@ import com.example.catphototg.handlers.interfaces.TelegramFacade;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import static com.example.catphototg.constants.BotConstants.NO_CAT_FUNDED;
+import static com.example.catphototg.constants.BotConstants.*;
+
 
 @Service
 @RequiredArgsConstructor
@@ -46,13 +47,8 @@ public class CatCardService {
         Keyboard keyboard = keyboardService.createCatDetailsKeyboard(catId);
         MessageData messageData = messageFactory.createTextMessage(caption, keyboard);
 
-        if (cat.getFilePath() != null && !cat.getFilePath().isEmpty()) {
-            bot.sendPhotoFromFile(chatId, cat.getFilePath(), messageData);
-        } else {
-            String noPhotoMsg = "У этого котика нет фото 😿\n\n" + caption;
-            bot.sendTextWithKeyboard(chatId,
-                    messageFactory.createTextMessage(noPhotoMsg, keyboard));
-        }
+        bot.sendPhotoFromFile(chatId, cat.getFilePath(), messageData);
+
     }
 
     public void handleBackAction(TelegramFacade bot, User user, Long chatId) {
@@ -87,7 +83,11 @@ public class CatCardService {
             currentPage = totalPages - 1;
         }
 
+<<<<<<< AddMycats
         String successMsg = "Котик успешно удален ✅";
+=======
+        String successMsg = CAT_SUCCESS_DELETE_MESSAGE;
+>>>>>>> feature
         bot.sendText(chatId,messageFactory.createTextMessage(successMsg,null));
 
         int finalCurrentPage = currentPage;

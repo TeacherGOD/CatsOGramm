@@ -51,6 +51,10 @@ public final class BotConstants {
     public static final String CAT_NAME_ERROR_MESSAGE="Имя котика должно быть от 2 до 30 символов. Попробуйте еще раз:";
     public static final String DEFAULT_MESSAGE="Пожалуйста, выберите действие";
     public static final String NAME_ERROR_MESSAGE="Имя должно быть от 2 до 30 символов. Попробуйте еще раз:";
+<<<<<<< AddMycats
+=======
+    public static final String CAT_SUCCESS_DELETE_MESSAGE="Котик успешно удален ✅";
+>>>>>>> feature
 
 
     private BotConstants() {
