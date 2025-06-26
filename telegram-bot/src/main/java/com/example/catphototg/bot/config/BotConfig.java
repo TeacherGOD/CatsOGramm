@@ -1,6 +1,6 @@
 package com.example.catphototg.bot.config;
 
-import com.example.catphototg.bot.CatBot;
+import com.example.catphototg.bot.bot.CatBot;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

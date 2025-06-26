@@ -1,4 +1,4 @@
-package com.example.catphototg.bot;
+package com.example.catphototg.bot.bot;
 
 import com.example.catphototg.bot.config.BotProperties;
 import com.example.catphototg.bot.entity.User;
@@ -29,15 +29,13 @@ public class CatBot extends TelegramLongPollingBot  implements TelegramFacade {
     private final DispatcherService dispatcher;
     private final MessageFactory messageFactory;
     private final KeyboardConverter keyboardConverter;
-    private final FileStorageService fileStorageService;
 
-    public CatBot(BotProperties botProperties, @Lazy DispatcherService dispatcher, MessageFactory messageFactory, KeyboardConverter keyboardConverter, FileStorageService fileStorageService) {
+    public CatBot(BotProperties botProperties, @Lazy DispatcherService dispatcher, MessageFactory messageFactory, KeyboardConverter keyboardConverter) {
         super(botProperties.getToken());
         this.botProperties = botProperties;
         this.dispatcher = dispatcher;
         this.messageFactory = messageFactory;
         this.keyboardConverter = keyboardConverter;
-        this.fileStorageService = fileStorageService;
     }
 
     @Override
@@ -117,9 +115,8 @@ public class CatBot extends TelegramLongPollingBot  implements TelegramFacade {
             handleError(chatId, "Ошибка отправки фото", e, null);
         }
     }
-    public void sendPhotoFromFile(Long chatId, String filePath, MessageData messageData) {
+    public void sendPhotoFromFile(Long chatId, File photoFile, MessageData messageData) {
         try {
-            File photoFile = new File(fileStorageService.load(filePath).toUri());
             SendPhoto photo = new SendPhoto();
             photo.setChatId(chatId.toString());
             photo.setPhoto(new InputFile(photoFile));

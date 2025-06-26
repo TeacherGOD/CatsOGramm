@@ -2,7 +2,6 @@ package com.example.catphototg.catservice.service;
 
 import com.example.catphototg.catservice.dto.CatDto;
 import com.example.catphototg.catservice.entity.Cat;
-import com.example.catphototg.bot.entity.User;
 import com.example.catphototg.catservice.entity.ReactionType;
 import com.example.catphototg.catservice.exceptions.CatNotFoundException;
 import com.example.catphototg.catservice.exceptions.ReactionException;

@@ -4,15 +4,17 @@ package com.example.catphototg.bot.handlers;
 import com.example.catphototg.bot.dto.TelegramMessage;
 import com.example.catphototg.bot.entity.User;
 import com.example.catphototg.bot.entity.UserSession;
-import com.example.catphototg.catservice.entity.ReactionType;
 import com.example.catphototg.bot.entity.enums.UserState;
 import com.example.catphototg.bot.handlers.interfaces.TelegramFacade;
 import com.example.catphototg.bot.handlers.interfaces.UpdateHandler;
-import com.example.catphototg.catservice.service.RandomCatService;
 import com.example.catphototg.bot.service.SessionService;
+import com.example.catphototg.catservice.entity.ReactionType;
+import com.example.catphototg.catservice.service.CatServiceClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+
+import static com.example.catphototg.bot.constants.BotConstants.*;
 
 @Component
 @Slf4j
@@ -20,7 +22,7 @@ import org.springframework.stereotype.Component;
 public class ReactionHandler implements UpdateHandler {
     private final SessionService sessionService;
     private final TelegramFacade bot;
-    private final RandomCatService randomCatService;
+    private final CatServiceClient catServiceClient;
     private final ViewCatsHandler viewCatsHandler;
 
     @Override
@@ -41,10 +43,10 @@ public class ReactionHandler implements UpdateHandler {
         String callback = message.text();
         try {
             if (callback.startsWith(LIKE_ACTION_PREFIX)) {
-                randomCatService.processReaction(user, currentCatId, ReactionType.LIKE);
+                updateReaction(user, message.chatId(), currentCatId, ReactionType.LIKE);
             }
             else if (callback.startsWith(DISLIKE_ACTION_PREFIX)) {
-                randomCatService.processReaction(user, currentCatId, ReactionType.DISLIKE);
+                updateReaction(user, message.chatId(), currentCatId, ReactionType.DISLIKE);
             } else if (callback.equals(BACK_TO_MENU_ACTION)) {
                 sessionService.clearSession(user.getTelegramId());
                 bot.showMainMenu(message.chatId(), user);
@@ -57,5 +59,13 @@ public class ReactionHandler implements UpdateHandler {
         } catch (Exception e) {
             bot.handleError(message.chatId(), "Ошибка во время реакции: ", e,user);
         }
+    }
+    private void updateReaction(User user, Long chatId, Long catId, ReactionType type) {
+
+        catServiceClient.updateReactionAsync(catId, user.getId(), type)
+                .exceptionally(ex -> {
+                    bot.handleError(chatId, "Ошибка обновления реакции", (Exception) ex, user);
+                    return null;
+                });
     }
 }

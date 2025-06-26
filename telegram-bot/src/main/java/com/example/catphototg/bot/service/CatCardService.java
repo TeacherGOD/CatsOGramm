@@ -1,19 +1,14 @@
 package com.example.catphototg.bot.service;
 
-import com.example.catphototg.catservice.entity.Cat;
 import com.example.catphototg.bot.entity.User;
 import com.example.catphototg.bot.entity.UserSession;
 import com.example.catphototg.bot.entity.enums.UserState;
 import com.example.catphototg.bot.entity.ui.Keyboard;
 import com.example.catphototg.bot.entity.ui.MessageData;
-import com.example.catphototg.catservice.exceptions.CatNotFoundException;
 import com.example.catphototg.bot.handlers.interfaces.TelegramFacade;
-import com.example.catphototg.catservice.service.CatService;
 import com.example.catphototg.catservice.service.CatServiceClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import static com.example.catphototg.bot.constants.BotConstants.NO_CAT_FUNDED;
 
 @Service
 @RequiredArgsConstructor

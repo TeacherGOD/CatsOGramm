@@ -6,7 +6,7 @@ import com.example.catphototg.bot.entity.UserSession;
 import com.example.catphototg.bot.entity.enums.UserState;
 import com.example.catphototg.bot.handlers.interfaces.UpdateHandler;
 import com.example.catphototg.bot.mapper.TelegramMessageMapper;
-import com.example.catphototg.bot.CatBot;
+import com.example.catphototg.bot.bot.CatBot;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.Update;

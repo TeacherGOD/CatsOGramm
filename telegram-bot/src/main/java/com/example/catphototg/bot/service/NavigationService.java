@@ -6,10 +6,8 @@ import com.example.catphototg.bot.entity.UserSession;
 import com.example.catphototg.bot.entity.ui.Keyboard;
 import com.example.catphototg.bot.entity.ui.MessageData;
 import com.example.catphototg.bot.handlers.interfaces.TelegramFacade;
-import com.example.catphototg.catservice.entity.Cat;
 import com.example.catphototg.catservice.service.CatServiceClient;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 @Service

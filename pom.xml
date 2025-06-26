@@ -9,10 +9,18 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.example</groupId>
-    <artifactId>catphototg</artifactId>
+    <artifactId>catphototg-parent</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>catphototg</name>
-    <description>catphototg</description>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>telegram-bot</module>
+        <module>cat-service</module>
+    </modules>
+
+
+    <name>catphototg-parent</name>
+    <description>catphototg-parent</description>
     <url/>
     <licenses>
         <license/>
