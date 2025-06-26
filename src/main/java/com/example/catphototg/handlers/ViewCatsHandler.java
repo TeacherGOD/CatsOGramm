@@ -11,16 +11,15 @@ import com.example.catphototg.entity.ui.Keyboard;
 import com.example.catphototg.entity.ui.MessageData;
 import com.example.catphototg.handlers.interfaces.TelegramFacade;
 import com.example.catphototg.handlers.interfaces.UpdateHandler;
-import com.example.catphototg.service.KeyboardService;
-import com.example.catphototg.service.MessageFactory;
-import com.example.catphototg.service.RandomCatService;
-import com.example.catphototg.service.SessionService;
+import com.example.catphototg.service.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
 import java.util.Optional;
 
-import static com.example.catphototg.constants.BotConstants.*;
+import static com.example.catphototg.constants.BotConstants.CAT_CARD_MESSAGE;
+import static com.example.catphototg.constants.BotConstants.NO_CATS_MESSAGE;
 
 @Component
 @RequiredArgsConstructor
@@ -30,6 +29,7 @@ public class ViewCatsHandler implements UpdateHandler {
     private final RandomCatService randomCatService;
     private final MessageFactory messageFactory;
     private final KeyboardService keyboardService;
+    private final FileStorageService fileStorageService;
 
     @Override
     public boolean canHandle(User user, UserSession session, TelegramMessage message) {
@@ -70,6 +70,7 @@ public class ViewCatsHandler implements UpdateHandler {
         int dislikeCount = cat.reactionCounts().getOrDefault(ReactionType.DISLIKE, 0);
         Keyboard keyboard = keyboardService.createReactionKeyboard(cat.id(), likeCount, dislikeCount);
 
-        bot.sendPhotoFromFile(chatId, cat.filePath(), new MessageData(caption, keyboard));
+        File photoFile = new File(fileStorageService.load(cat.filePath()).toUri());
+        bot.sendPhotoFromFile(chatId, photoFile, new MessageData(caption, keyboard));
     }
 }

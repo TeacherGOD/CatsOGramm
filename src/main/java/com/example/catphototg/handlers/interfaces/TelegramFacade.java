@@ -16,6 +16,6 @@ public interface TelegramFacade {
     String getFilePath(String fileId) throws BotOperationException;
     File downloadBotFile(String filePath) throws BotOperationException;
     void sendPhotoWithKeyboard(Long chatId, String photoFileId, MessageData messageData);
-    void sendPhotoFromFile(Long chatId, String filePath, MessageData messageData);
+    void sendPhotoFromFile(Long chatId, File photoFile, MessageData messageData);
     void sendText(Long chatId, MessageData textMessage);
 }

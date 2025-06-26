@@ -11,7 +11,10 @@ import com.example.catphototg.handlers.interfaces.TelegramFacade;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import static com.example.catphototg.constants.BotConstants.*;
+import java.io.File;
+
+import static com.example.catphototg.constants.BotConstants.CAT_SUCCESS_DELETE_MESSAGE;
+import static com.example.catphototg.constants.BotConstants.NO_CAT_FUNDED;
 
 
 @Service
@@ -22,6 +25,7 @@ public class CatCardService {
     private final MessageFactory messageFactory;
     private final SessionService sessionService;
     private final NavigationService navigationService;
+    private final FileStorageService fileStorageService;
 
     public void showCatCard(TelegramFacade bot, User user, Long catId, int currentPage, Long chatId) {
         Cat cat;
@@ -47,7 +51,8 @@ public class CatCardService {
         Keyboard keyboard = keyboardService.createCatDetailsKeyboard(catId);
         MessageData messageData = messageFactory.createTextMessage(caption, keyboard);
 
-        bot.sendPhotoFromFile(chatId, cat.getFilePath(), messageData);
+        File photoFile = new File(fileStorageService.load(cat.getFilePath()).toUri());
+        bot.sendPhotoFromFile(chatId, photoFile, messageData);
     }
 
     public void handleBackAction(TelegramFacade bot, User user, Long chatId) {
