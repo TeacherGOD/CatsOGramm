@@ -18,8 +18,8 @@ import org.springframework.stereotype.Component;
 import java.io.File;
 import java.util.concurrent.CompletionException;
 
-import static com.example.catphototg.constants.BotConstants.ADD_CAT_PROMPT_MESSAGE;
-import static com.example.catphototg.constants.BotConstants.CANCEL_ACTION;
+import static com.example.catphototg.constants.BotConstants.*;
+
 
 @Component
 @RequiredArgsConstructor
@@ -50,8 +50,8 @@ public class AddCatPhotoHandler implements UpdateHandler {
         }
 
         if (message.hasPhoto()) {
-            //todo const
-            bot.sendText(chatId, new MessageData("📤 Загружаем фото в облако...",null));
+
+            bot.sendText(chatId, new MessageData(ASYNC_CLOUD_IMAGE,null));
 
             try {
 

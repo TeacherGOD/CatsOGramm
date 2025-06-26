@@ -9,6 +9,8 @@ import com.example.catphototg.handlers.interfaces.TelegramFacade;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import static com.example.catphototg.constants.BotConstants.*;
+
 @Service
 @RequiredArgsConstructor
 public class NavigationService {
@@ -52,8 +54,8 @@ public class NavigationService {
     }
 
     public void showCatsPage(TelegramFacade bot, User user, Long chatId, int page) {
-        //todo const
-        bot.sendText(chatId, messageFactory.createTextMessage("⌛ Загружаем ваших котиков...", null));
+
+        bot.sendText(chatId, messageFactory.createTextMessage(ASYNC_LOAD_CAT_MSG, null));
 
         catServiceClient.getCatsByAuthorAsync(user.getId(), user.getUsername(), page, 9)
                 .thenAccept(pagedResponse -> {

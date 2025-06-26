@@ -59,6 +59,11 @@ public final class BotConstants {
     public static final String NO_NAME_USER ="Пользователь";
     public static final String MAIN_MENU_MESSAGE ="%s, выбери действие:";
     public static final String MY_CATS_PAGE_MESSAGE ="Ваши котики (страница %d):";
+    public static final String ASYNC_LOAD_CAT_MSG ="⌛ Загружаем ваших котиков...";
+    public static final String ASYNC_LOAD_CAT_INFO_MSG ="⌛ Загружаем информацию о котике...";
+    public static final String ASYNC_CLOUD_IMAGE ="📤 Загружаем фото в облако...";
+    public static final String ASYNC_LOOKING_FOR_NEW_CAT ="🔍 Ищем нового котика для вас...";
+    public static final String CAT_NAME ="🐱 Имя: %s";
 
 
 

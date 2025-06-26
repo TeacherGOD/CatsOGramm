@@ -19,6 +19,8 @@ import java.io.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
+import static com.example.catphototg.constants.BotConstants.*;
+
 @Component
 @RequiredArgsConstructor
 public class ViewCatsHandler implements UpdateHandler {
@@ -45,8 +47,8 @@ public class ViewCatsHandler implements UpdateHandler {
     }
 
     public void showRandomCat(User user, Long chatId) {
-        //todo const
-        bot.sendText(chatId, messageFactory.createTextMessage("🔍 Ищем нового котика для вас...", null));
+
+        bot.sendText(chatId, messageFactory.createTextMessage(ASYNC_LOOKING_FOR_NEW_CAT, null));
         catServiceClient.getRandomCatAsync(user.getId())
                 .thenCompose(randomCat -> {
                     if (randomCat == null) {
@@ -60,7 +62,7 @@ public class ViewCatsHandler implements UpdateHandler {
                     );
 
                     String caption = String.format(
-                            "🐱 Имя: %s\nАвтор: @%s",
+                            CAT_CARD_MESSAGE,
                             randomCat.name(),
                             catUser.username()
                     );
@@ -99,9 +101,8 @@ public class ViewCatsHandler implements UpdateHandler {
     }
 
     private void showNoCatsMessage(Long chatId) {
-        //todo const, но уже?
         MessageData noCatsMessage = messageFactory.createTextMessage(
-                "Вы посмотрели всех котиков! 🐾\nПопробуйте позже, когда добавят новых.",
+                NO_CATS_MESSAGE,
                 keyboardService.mainMenuKeyboard()
         );
         bot.sendTextWithKeyboard(chatId, noCatsMessage);

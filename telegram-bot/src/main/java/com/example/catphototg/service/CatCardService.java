@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 import java.io.*;
 import java.util.concurrent.CompletionException;
 
+import static com.example.catphototg.constants.BotConstants.*;
+
 @Service
 @RequiredArgsConstructor
 public class CatCardService {
@@ -26,8 +28,8 @@ public class CatCardService {
     private String filesBaseUrl;
 
     public void showCatCard(TelegramFacade bot, User user, Long catId, int currentPage, Long chatId) {
-        //todo const
-        bot.sendText(chatId, messageFactory.createTextMessage("⌛ Загружаем информацию о котике...", null));
+
+        bot.sendText(chatId, messageFactory.createTextMessage(ASYNC_LOAD_CAT_INFO_MSG, null));
         catServiceClient.getCatByChatIdAsync(catId, user.getUsername())
             .thenCompose(catDto -> {
                 sessionService.updateSession(user.getTelegramId(), session -> {
@@ -36,7 +38,7 @@ public class CatCardService {
                     session.setState(UserState.VIEWING_CAT_DETAILS);
                 });
 
-                String caption = "🐱 Имя: " + catDto.name();
+                String caption = String.format(CAT_NAME, catDto.name());
                 Keyboard keyboard = keyboardService.createCatDetailsKeyboard(catId);
                 MessageData messageData = messageFactory.createTextMessage(caption, keyboard);
 
@@ -111,8 +113,8 @@ public class CatCardService {
                         s.setState(UserState.BROWSING_MY_CATS);
                     });
 
-                    //todo const но уже?
-                    String successMsg = "Котик успешно удален ✅";
+
+                    String successMsg = CAT_SUCCESS_DELETE_MESSAGE;
                     bot.sendText(chatId, messageFactory.createTextMessage(successMsg, null));
 
                     navigationService.showCatsPage(bot, user, chatId, newPage);
