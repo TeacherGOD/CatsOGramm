@@ -29,15 +29,13 @@ public class CatBot extends TelegramLongPollingBot  implements TelegramFacade {
     private final DispatcherService dispatcher;
     private final MessageFactory messageFactory;
     private final KeyboardConverter keyboardConverter;
-    private final FileStorageService fileStorageService;
 
-    public CatBot(BotProperties botProperties, @Lazy DispatcherService dispatcher, MessageFactory messageFactory, KeyboardConverter keyboardConverter, FileStorageService fileStorageService) {
+    public CatBot(BotProperties botProperties, @Lazy DispatcherService dispatcher, MessageFactory messageFactory, KeyboardConverter keyboardConverter) {
         super(botProperties.getToken());
         this.botProperties = botProperties;
         this.dispatcher = dispatcher;
         this.messageFactory = messageFactory;
         this.keyboardConverter = keyboardConverter;
-        this.fileStorageService = fileStorageService;
     }
 
     @Override
@@ -117,9 +115,8 @@ public class CatBot extends TelegramLongPollingBot  implements TelegramFacade {
             handleError(chatId, "Ошибка отправки фото", e, null);
         }
     }
-    public void sendPhotoFromFile(Long chatId, String filePath, MessageData messageData) {
+    public void sendPhotoFromFile(Long chatId, File photoFile, MessageData messageData) {
         try {
-            File photoFile = new File(fileStorageService.load(filePath).toUri());
             SendPhoto photo = new SendPhoto();
             photo.setChatId(chatId.toString());
             photo.setPhoto(new InputFile(photoFile));
@@ -128,7 +125,7 @@ public class CatBot extends TelegramLongPollingBot  implements TelegramFacade {
             execute(photo);
         } catch (TelegramApiException e) {
             handleError(chatId, "Ошибка отправки фото с диска", e, null);
-            log.error(String.format("Filepath=%s,messageData=%s",filePath,messageData.text()));
+            log.error(String.format("Filepath=%s,messageData=%s",photoFile.toURI(),messageData.text()));
         }
     }
 

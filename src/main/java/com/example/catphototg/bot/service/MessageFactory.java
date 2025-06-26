@@ -17,7 +17,7 @@ public class MessageFactory {
     private final KeyboardService keyboardService;
 
     public MessageData createMainMenuMessage(User user) {
-        String text = user.getDisplayName() + ", выбери действие:";
+        String text = String.format(MAIN_MENU_MESSAGE,user.getDisplayName());
         return new MessageData(text, keyboardService.mainMenuKeyboard());
     }
 
@@ -31,8 +31,8 @@ public class MessageFactory {
 
     public MessageData createErrorMessage(User user, String errorDetails) {
         String userName = (user != null && user.getDisplayName() != null) ?
-                user.getDisplayName() : "Пользователь";
-        String text = "😿 Упс, " + userName + ", произошла ошибка: " + errorDetails;
+                user.getDisplayName() : NO_NAME_USER;
+        String text = String.format(ERROR_MESSAGE,userName,errorDetails);
         return new MessageData(text, keyboardService.mainMenuKeyboard());
     }
 

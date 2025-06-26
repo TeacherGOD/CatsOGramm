@@ -31,7 +31,7 @@ public class AddCatPhotoHandler implements UpdateHandler {
         return session != null &&
                 session.getState() == UserState.ADDING_CAT_PHOTO &&
                 (message.hasPhoto() ||
-                (message.isCallback() && BotConstants.CANCEL_ACTION.equals(message.text())));
+                (message.isCallback() && CANCEL_ACTION.equals(message.text())));
     }
 
     @Override
@@ -40,7 +40,7 @@ public class AddCatPhotoHandler implements UpdateHandler {
         Long chatId = message.chatId();
         Long telegramId = user.getTelegramId();
 
-        if (message.isCallback() && BotConstants.CANCEL_ACTION.equals(text)) {
+        if (message.isCallback() && CANCEL_ACTION.equals(text)) {
             sessionService.clearSession(telegramId);
             bot.showMainMenu(chatId, user);
             return;
@@ -67,7 +67,7 @@ public class AddCatPhotoHandler implements UpdateHandler {
 
         } else {
             MessageData promptMessage = messageFactory.createTextMessage(
-                    "Пожалуйста, отправьте фото котика:",
+                    ADD_CAT_PROMPT_MESSAGE,
                     keyboardService.cancelKeyboard()
             );
             bot.sendTextWithKeyboard(chatId, promptMessage);

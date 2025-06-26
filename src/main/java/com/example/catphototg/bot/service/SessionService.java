@@ -55,6 +55,6 @@ public class SessionService {
                     updater.accept(session);
                     return sessionRepository.save(session);
                 })
-                .orElseThrow(() -> new IllegalStateException("Session not found"));
+                .orElseThrow(() -> new IllegalStateException("Сессия не найдена"));
     }
 }

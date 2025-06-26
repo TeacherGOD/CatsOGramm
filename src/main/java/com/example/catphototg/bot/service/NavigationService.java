@@ -25,13 +25,13 @@ public class NavigationService {
                 .orElseThrow();
 
         switch (callbackData) {
-            case BotConstants.NEXT_PAGE_ACTION:
+            case NEXT_PAGE_ACTION:
                 handleNextPage(bot, user, session, chatId);
                 break;
-            case BotConstants.PREV_PAGE_ACTION:
+            case PREV_PAGE_ACTION:
                 handlePrevPage(bot, user, session, chatId);
                 break;
-            case BotConstants.BACK_TO_MENU_ACTION:
+            case BACK_TO_MENU_ACTION:
                 bot.showMainMenu(chatId, user);
                 sessionService.clearSession(user.getTelegramId());
                 break;
@@ -56,7 +56,7 @@ public class NavigationService {
 
     public void showCatsPage(TelegramFacade bot, User user, Long chatId, int page) {
         Page<Cat> catPage = catService.getCatsByAuthor(user, page, 9);
-        String message = "Ваши котики (страница " + (page + 1) + "):";
+        String message = String.format(MY_CATS_PAGE_MESSAGE,(page + 1));
         Keyboard keyboard = keyboardService.createCatsKeyboard(catPage, page);
         MessageData messageData = messageFactory.createTextMessage(message, keyboard);
 

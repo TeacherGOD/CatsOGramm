@@ -28,6 +28,7 @@ public class ViewCatsHandler implements UpdateHandler {
     private final RandomCatService randomCatService;
     private final MessageFactory messageFactory;
     private final KeyboardService keyboardService;
+    private final FileStorageService fileStorageService;
 
     @Override
     public boolean canHandle(User user, UserSession session, TelegramMessage message) {
@@ -68,6 +69,7 @@ public class ViewCatsHandler implements UpdateHandler {
         int dislikeCount = cat.reactionCounts().getOrDefault(ReactionType.DISLIKE, 0);
         Keyboard keyboard = keyboardService.createReactionKeyboard(cat.id(), likeCount, dislikeCount);
 
-        bot.sendPhotoFromFile(chatId, cat.filePath(), new MessageData(caption, keyboard));
+        File photoFile = new File(fileStorageService.load(cat.filePath()).toUri());
+        bot.sendPhotoFromFile(chatId, photoFile, new MessageData(caption, keyboard));
     }
 }
