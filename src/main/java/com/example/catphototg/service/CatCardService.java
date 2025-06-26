@@ -11,7 +11,11 @@ import com.example.catphototg.handlers.interfaces.TelegramFacade;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import static com.example.catphototg.constants.BotConstants.*;
+import java.io.File;
+
+import static com.example.catphototg.constants.BotConstants.CAT_SUCCESS_DELETE_MESSAGE;
+import static com.example.catphototg.constants.BotConstants.NO_CAT_FUNDED;
+
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +25,7 @@ public class CatCardService {
     private final MessageFactory messageFactory;
     private final SessionService sessionService;
     private final NavigationService navigationService;
+    private final FileStorageService fileStorageService;
 
     public void showCatCard(TelegramFacade bot, User user, Long catId, int currentPage, Long chatId) {
         Cat cat;
@@ -46,7 +51,8 @@ public class CatCardService {
         Keyboard keyboard = keyboardService.createCatDetailsKeyboard(catId);
         MessageData messageData = messageFactory.createTextMessage(caption, keyboard);
 
-        bot.sendPhotoFromFile(chatId, cat.getFilePath(), messageData);
+        File photoFile = new File(fileStorageService.load(cat.getFilePath()).toUri());
+        bot.sendPhotoFromFile(chatId, photoFile, messageData);
     }
 
     public void handleBackAction(TelegramFacade bot, User user, Long chatId) {
@@ -73,7 +79,6 @@ public class CatCardService {
             return;
         }
 
-
         int currentPage = session.getCurrentPage();
         int totalPages = catService.getCatsByAuthor(user, 0, 9).getTotalPages();
 
@@ -81,8 +86,7 @@ public class CatCardService {
             currentPage = totalPages - 1;
         }
 
-        String successMsg = CAT_SUCCESS_DELETE_MESSAGE;
-        bot.sendText(chatId,messageFactory.createTextMessage(successMsg,null));
+        bot.sendText(chatId,messageFactory.createTextMessage(CAT_SUCCESS_DELETE_MESSAGE,null));
 
         int finalCurrentPage = currentPage;
         sessionService.updateSession(user.getTelegramId(), s -> {

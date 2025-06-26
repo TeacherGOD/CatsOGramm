@@ -1,9 +1,7 @@
 package com.example.catphototg.tgbot;
 
 import com.example.catphototg.config.BotProperties;
-import com.example.catphototg.constants.BotConstants;
 import com.example.catphototg.entity.User;
-import com.example.catphototg.entity.UserSession;
 import com.example.catphototg.entity.ui.MessageData;
 import com.example.catphototg.exceptions.BotOperationException;
 import com.example.catphototg.handlers.interfaces.TelegramFacade;
@@ -67,23 +65,6 @@ public class CatBot extends TelegramLongPollingBot  implements TelegramFacade {
         sendTextWithKeyboard(chatId, messageFactory.createCatPhotoPrompt(user));
     }
 
-    @Override
-    public void showCatConfirmation(Long chatId, UserSession session, User user) {
-        try {
-            MessageData messageData = messageFactory.createCatConfirmationMessage(user, session);
-
-            SendPhoto photo = new SendPhoto();
-            photo.setChatId(chatId.toString());
-            photo.setPhoto(new InputFile(session.getPhotoFileId()));
-            photo.setCaption(messageData.text());
-            photo.setReplyMarkup(keyboardConverter.convert(messageData.keyboard()));
-
-            execute(photo);
-        } catch (TelegramApiException e) {
-            handleError(chatId, BotConstants.PHOTO_SENDING_ERROR, e, user);
-        }
-    }
-
     public String getFilePath(String fileId) throws BotOperationException  {
         try {
             GetFile getFile = new GetFile();
@@ -104,6 +85,45 @@ public class CatBot extends TelegramLongPollingBot  implements TelegramFacade {
             execute(message);
         } catch (TelegramApiException ex) {
             log.error("Ошибка отправки сообщения", ex);
+        }
+    }
+
+    public void sendText(Long chatId, MessageData messageData){
+        try {
+            SendMessage message = new SendMessage();
+            message.setChatId(chatId.toString());
+            message.setText(messageData.text());
+            execute(message);
+        } catch (TelegramApiException ex) {
+            log.error("Ошибка отправки сообщения", ex);
+        }
+    }
+
+
+    public void sendPhotoWithKeyboard(Long chatId, String photoFileId, MessageData messageData) {
+        try {
+            SendPhoto photo = new SendPhoto();
+            photo.setChatId(chatId.toString());
+            photo.setPhoto(new InputFile(photoFileId));
+            photo.setCaption(messageData.text());
+            photo.setReplyMarkup(keyboardConverter.convert(messageData.keyboard()));
+
+            execute(photo);
+        } catch (TelegramApiException e) {
+            handleError(chatId, "Ошибка отправки фото", e, null);
+        }
+    }
+    public void sendPhotoFromFile(Long chatId, File photoFile, MessageData messageData) {
+        try {
+            SendPhoto photo = new SendPhoto();
+            photo.setChatId(chatId.toString());
+            photo.setPhoto(new InputFile(photoFile));
+            photo.setCaption(messageData.text());
+            photo.setReplyMarkup(keyboardConverter.convert(messageData.keyboard()));
+            execute(photo);
+        } catch (TelegramApiException e) {
+            handleError(chatId, "Ошибка отправки фото с диска", e, null);
+            log.error(String.format("Filepath=%s,messageData=%s",photoFile.toURI(),messageData.text()));
         }
     }
 

@@ -41,7 +41,6 @@ public class DispatcherService {
             return;
         }
 
-
         UserSession session = sessionOpt.orElse(null);
         for (UpdateHandler handler : handlers) {
             if (handler.canHandle(user, session, tgMessage)) {
