@@ -1,10 +1,10 @@
 package com.example.catphototg.bot.service;
 
 import com.example.catphototg.bot.constants.BotConstants;
-import com.example.catphototg.catservice.entity.Cat;
 import com.example.catphototg.bot.entity.ui.Button;
 import com.example.catphototg.bot.entity.ui.Keyboard;
 import com.example.catphototg.bot.entity.ui.KeyboardRow;
+import com.example.catphototg.catservice.dto.CatDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import static com.example.catphototg.bot.constants.BotConstants.*;
 
 @Service
 @RequiredArgsConstructor
@@ -47,11 +49,11 @@ public class KeyboardService {
         return new Keyboard(rows);
     }
 
-    public Keyboard createCatsKeyboard(Page<Cat> catPage, int currentPage) {
+    public Keyboard createCatsKeyboard(Page<CatDto> catPage, int currentPage) {
         List<KeyboardRow> rows = new ArrayList<>();
 
-        for (Cat cat : catPage.getContent()) {
-            Button catButton = new Button(cat.getName(), CAT_DETAILS_PREFIX + cat.getId());
+        for (CatDto cat : catPage.getContent()) {
+            Button catButton = new Button(cat.name(), CAT_DETAILS_PREFIX + cat.id());
             rows.add(new KeyboardRow(Collections.singletonList(catButton)));
         }
 

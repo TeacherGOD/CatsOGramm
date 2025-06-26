@@ -1,13 +1,13 @@
 package com.example.catphototg.bot.service;
 
 import com.example.catphototg.bot.constants.BotConstants;
-import com.example.catphototg.catservice.entity.Cat;
 import com.example.catphototg.bot.entity.User;
 import com.example.catphototg.bot.entity.UserSession;
 import com.example.catphototg.bot.entity.ui.Keyboard;
 import com.example.catphototg.bot.entity.ui.MessageData;
 import com.example.catphototg.bot.handlers.interfaces.TelegramFacade;
-import com.example.catphototg.catservice.service.CatService;
+import com.example.catphototg.catservice.entity.Cat;
+import com.example.catphototg.catservice.service.CatServiceClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class NavigationService {
-    private final CatService catService;
+    private final CatServiceClient catServiceClient;
     private final SessionService sessionService;
     private final MessageFactory messageFactory;
     private final KeyboardService keyboardService;
@@ -55,11 +55,19 @@ public class NavigationService {
     }
 
     public void showCatsPage(TelegramFacade bot, User user, Long chatId, int page) {
-        Page<Cat> catPage = catService.getCatsByAuthor(user, page, 9);
-        String message = "Ваши котики (страница " + (page + 1) + "):";
-        Keyboard keyboard = keyboardService.createCatsKeyboard(catPage, page);
-        MessageData messageData = messageFactory.createTextMessage(message, keyboard);
+        bot.sendText(chatId, messageFactory.createTextMessage("⌛ Загружаем ваших котиков...", null));
 
-        bot.sendTextWithKeyboard(chatId, messageData);
+        catServiceClient.getCatsByAuthorAsync(user.getId(), page, 9)
+                .thenAccept(catPage -> {
+                    String message = "Ваши котики (страница " + (page + 1) + "):";
+                    Keyboard keyboard = keyboardService.createCatsKeyboard(catPage, page);
+                    MessageData messageData = messageFactory.createTextMessage(message, keyboard);
+
+                    bot.sendTextWithKeyboard(chatId, messageData);
+                })
+                .exceptionally(ex -> {
+                    bot.handleError(chatId, "Ошибка загрузки котиков", ex, user);
+                    return null;
+                });
     }
 }

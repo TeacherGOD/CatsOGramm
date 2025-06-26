@@ -18,38 +18,38 @@ import static com.example.catphototg.bot.constants.BotConstants.NO_CAT_FUNDED;
 @Service
 @RequiredArgsConstructor
 public class CatCardService {
-    private final CatService catService;
+    private final CatServiceClient catServiceClient;
     private final KeyboardService keyboardService;
     private final MessageFactory messageFactory;
     private final SessionService sessionService;
     private final NavigationService navigationService;
-    private final CatServiceClient catServiceClient;
 
-    public void showCatCard(TelegramFacade bot, User user, Long catId, Long chatId) {
-        Cat cat;
-        try {
-            cat = catService.getCatById(catId);
-        } catch (CatNotFoundException e) {
-            bot.handleError(chatId, NO_CAT_FUNDED, e, user);
-            return;
-        }
+    public void showCatCard(TelegramFacade bot, User user, Long catId, int currentPage, Long chatId) {
+        bot.sendText(chatId, messageFactory.createTextMessage("⌛ Загружаем информацию о котике...", null));
+        catServiceClient.getCatByIdAsync(catId)
+                .thenAccept(catDto -> {
+                    sessionService.updateSession(user.getTelegramId(), session -> {
+                        session.setViewingCatId(catId);
+                        session.setCurrentPage(currentPage);
+                        session.setState(UserState.VIEWING_CAT_DETAILS);
+                    });
 
-        if (!cat.getAuthor().getId().equals(user.getId())) {
-            bot.handleError(chatId, "Котик не найден или недоступен", null, user);
-            return;
-        }
+                    String caption = "🐱 Имя: " + catDto.name();
+                    Keyboard keyboard = keyboardService.createCatDetailsKeyboard(catId, currentPage);
+                    MessageData messageData = messageFactory.createTextMessage(caption, keyboard);
 
-        String caption = "🐱 Имя: " + cat.getName();
-        Keyboard keyboard = keyboardService.createCatDetailsKeyboard(catId);
-        MessageData messageData = messageFactory.createTextMessage(caption, keyboard);
-
-        if (cat.getFilePath() != null && !cat.getFilePath().isEmpty()) {
-            bot.sendPhotoFromFile(chatId, cat.getFilePath(), messageData);
-        } else {
-            String noPhotoMsg = "У этого котика нет фото 😿\n\n" + caption;
-            bot.sendTextWithKeyboard(chatId,
-                    messageFactory.createTextMessage(noPhotoMsg, keyboard));
-        }
+                    if (catDto.filePath() != null && !catDto.filePath().isEmpty()) {
+                        bot.sendPhotoFromFile(chatId, catDto.filePath(), messageData);
+                    } else {
+                        String noPhotoMsg = "У этого котика нет фото 😿\n\n" + caption;
+                        bot.sendTextWithKeyboard(chatId,
+                                messageFactory.createTextMessage(noPhotoMsg, keyboard));
+                    }
+                })
+                .exceptionally(ex -> {
+                    bot.handleError(chatId, "Ошибка загрузки котика", ex, user);
+                    return null;
+                });
     }
 
     public void handleBackAction(TelegramFacade bot, User user, Long chatId) {

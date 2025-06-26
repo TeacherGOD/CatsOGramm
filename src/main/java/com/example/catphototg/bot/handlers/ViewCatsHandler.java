@@ -20,6 +20,8 @@ import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
+import static com.example.catphototg.bot.constants.BotConstants.*;
+
 @Component
 @RequiredArgsConstructor
 public class ViewCatsHandler implements UpdateHandler {
@@ -42,7 +44,7 @@ public class ViewCatsHandler implements UpdateHandler {
 
     public void showRandomCat(User user, Long chatId) {
         Optional<CatDto> randomCat = randomCatService.getRandomCatForUser(user);
-
+        bot.sendText(chatId, messageFactory.createTextMessage("🔍 Ищем нового котика для вас...", null));
         if (randomCat.isEmpty()) {
             MessageData noCatsMessage = messageFactory.createTextMessage(
                     NO_CATS_MESSAGE,
