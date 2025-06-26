@@ -51,7 +51,7 @@ public class AddCatConfirmationHandler implements UpdateHandler {
                     .thenAccept(cat -> {
                         sessionService.clearSession(telegramId);
 
-                        String successText = "Котик \"" + cat.name() + "\" успешно добавлен!";
+                        String successText = String.format(CAT_SUCCESS_ADD_MESSAGE,cat.getName());
                         MessageData successMessage = messageFactory.createTextMessage(
                                 successText,
                                 keyboardService.mainMenuKeyboard()

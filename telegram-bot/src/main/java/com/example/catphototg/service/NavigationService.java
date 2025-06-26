@@ -52,11 +52,12 @@ public class NavigationService {
     }
 
     public void showCatsPage(TelegramFacade bot, User user, Long chatId, int page) {
+        //todo const
         bot.sendText(chatId, messageFactory.createTextMessage("⌛ Загружаем ваших котиков...", null));
 
         catServiceClient.getCatsByAuthorAsync(user.getId(), user.getUsername(), page, 9)
                 .thenAccept(pagedResponse -> {
-                    String message = "Ваши котики (страница " + (page + 1) + "):";
+                    String message = String.format(MY_CATS_PAGE_MESSAGE,(page + 1));
                     Keyboard keyboard = keyboardService.createCatsKeyboard(
                             pagedResponse.content(),
                             page,
