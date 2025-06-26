@@ -63,6 +63,8 @@ public final class BotConstants {
     public static final String ASYNC_LOAD_CAT_INFO_MSG ="⌛ Загружаем информацию о котике...";
     public static final String ASYNC_CLOUD_IMAGE ="📤 Загружаем фото в облако...";
     public static final String ASYNC_LOOKING_FOR_NEW_CAT ="🔍 Ищем нового котика для вас...";
+    public static final String ASYNC_CAT_ADD_MESSAGE ="🐱 Ваш котик начал свой путь к славе! Ожидайте подтверждения...";
+
     public static final String CAT_NAME ="🐱 Имя: %s";
 
 

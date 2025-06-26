@@ -8,10 +8,7 @@ import com.example.catphototg.entity.enums.UserState;
 import com.example.catphototg.entity.ui.MessageData;
 import com.example.catphototg.handlers.interfaces.TelegramFacade;
 import com.example.catphototg.handlers.interfaces.UpdateHandler;
-import com.example.catphototg.service.CatServiceClient;
-import com.example.catphototg.service.KeyboardService;
-import com.example.catphototg.service.MessageFactory;
-import com.example.catphototg.service.SessionService;
+import com.example.catphototg.service.*;
 import com.example.common.dto.CatCreationDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -51,7 +48,7 @@ public class AddCatConfirmationHandler implements UpdateHandler {
                     .thenAccept(cat -> {
                         sessionService.clearSession(telegramId);
 
-                        String successText = String.format(CAT_SUCCESS_ADD_MESSAGE,cat.getName());
+                        String successText = String.format(CAT_SUCCESS_ADD_MESSAGE,cat.name());
                         MessageData successMessage = messageFactory.createTextMessage(
                                 successText,
                                 keyboardService.mainMenuKeyboard()
@@ -63,7 +60,7 @@ public class AddCatConfirmationHandler implements UpdateHandler {
                         return null;
                     });
 
-            bot.sendText(chatId, messageFactory.createTextMessage("🐱 Ваш котик начал свой путь к славе! Ожидайте подтверждения...",null));
+            bot.sendText(chatId, messageFactory.createTextMessage(ASYNC_CAT_ADD_MESSAGE,null));
         }
         else if (CANCEL_CAT_ACTION.equals(text)) {
             sessionService.clearSession(telegramId);
