@@ -49,7 +49,7 @@ public class AddCatConfirmationHandler implements UpdateHandler {
 
             sessionService.clearSession(telegramId);
 
-            String successText = "Котик \"" + cat.getName() + "\" успешно добавлен!";
+            String successText = String.format(CAT_SUCCESS_ADD_MESSAGE,cat.getName());
             MessageData successMessage = messageFactory.createTextMessage(
                     successText,
                     keyboardService.mainMenuKeyboard()
