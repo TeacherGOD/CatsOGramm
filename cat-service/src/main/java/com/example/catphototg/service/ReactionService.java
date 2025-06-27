@@ -1,10 +1,8 @@
-package com.example.catphototg.catservice.service;
+package com.example.catphototg.service;
 
-import com.example.catphototg.bot.entity.User;
-import com.example.catphototg.catservice.entity.Cat;
-import com.example.catphototg.catservice.entity.Reaction;
-import com.example.catphototg.catservice.entity.ReactionType;
-import com.example.catphototg.catservice.repository.ReactionRepository;
+import com.example.catphototg.entity.Reaction;
+import com.example.catphototg.repository.ReactionRepository;
+import com.example.common.enums.ReactionType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,10 +13,11 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ReactionService {
     private final ReactionRepository reactionRepository;
+    private final CatService catService;
 
     @Transactional
-    public void toggleReaction(User user, Cat cat, ReactionType type) {
-        Optional<Reaction> existingReaction = reactionRepository.findByUserAndCat(user, cat);
+    public void toggleReaction(Long userId, Long catId, ReactionType type) {
+        Optional<Reaction> existingReaction = reactionRepository.findByUserIdAndCatId(userId, catId);
 
         if (existingReaction.isPresent()) {
             Reaction reaction = existingReaction.get();
@@ -29,8 +28,9 @@ public class ReactionService {
                 reactionRepository.save(reaction);
             }
         } else {
+            var cat =catService.getCatById(catId);
             Reaction newReaction = new Reaction();
-            newReaction.setUser(user);
+            newReaction.setUserId(userId);
             newReaction.setCat(cat);
             newReaction.setType(type);
             reactionRepository.save(newReaction);

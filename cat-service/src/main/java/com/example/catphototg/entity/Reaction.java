@@ -1,6 +1,7 @@
-package com.example.catphototg.catservice.entity;
+package com.example.catphototg.entity;
 
-import com.example.catphototg.bot.entity.User;
+
+import com.example.common.enums.ReactionType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,9 +22,8 @@ public class Reaction {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cat_id", nullable = false)

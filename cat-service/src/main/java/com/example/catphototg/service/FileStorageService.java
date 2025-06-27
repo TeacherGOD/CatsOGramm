@@ -1,13 +1,16 @@
-package com.example.catphototg.catservice.service;
+package com.example.catphototg.service;
 
-import com.example.catphototg.catservice.exceptions.StorageException;
-import com.example.catphototg.catservice.exceptions.StorageInitializationException;
+import com.example.catphototg.exceptions.StorageException;
+import com.example.catphototg.exceptions.StorageInitializationException;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
@@ -17,10 +20,10 @@ public class FileStorageService {
     @Value("${file.upload-dir:uploads}")
     private Path rootLocation;
 
-    public String store(File file) {
+    public String store(MultipartFile file) {
         try {
             String filename = UUID.randomUUID() + ".jpg";
-            Files.copy(file.toPath(), rootLocation.resolve(filename));
+            Files.copy(file.getInputStream(), rootLocation.resolve(filename));
             return filename;
         } catch (Exception e) {
             throw new StorageException("Не удалось сохранить файл: " + e.getMessage(), e);
@@ -47,6 +50,21 @@ public class FileStorageService {
             Files.deleteIfExists(path);
         } catch (IOException e) {
             throw new StorageException("Не удалось удалить файл:" + e.getMessage(), e);
+        }
+    }
+
+    public Resource loadAsResource(String filename) {
+        try {
+            Path file = rootLocation.resolve(filename);
+            Resource resource = new UrlResource(file.toUri());
+
+            if (resource.exists() && resource.isReadable()) {
+                return resource;
+            } else {
+                throw new StorageException("Не удалось прочитать файл:" + filename);
+            }
+        } catch (MalformedURLException e) {
+            throw new StorageException("Ошибка в URL для файла:" + filename, e);
         }
     }
 }
