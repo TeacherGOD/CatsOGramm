@@ -34,9 +34,7 @@ public class CatService {
         cat.setFilePath(dto.filepath());
         cat.setAuthorId(dto.authorId());
 
-        Cat savedCat = catRepository.save(cat);
-
-        return catMapper.toDto(cat,dto.authorName());
+        return catMapper.toDto(catRepository.save(cat),dto.authorName());
     }
 
     public int getCatsCountByAuthor(Long userId) {
