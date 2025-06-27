@@ -1,17 +1,17 @@
-package com.example.catphototg.bot.handlers;
+package com.example.catphototg.handlers;
 
-import com.example.catphototg.bot.dto.TelegramMessage;
-import com.example.catphototg.bot.entity.User;
-import com.example.catphototg.bot.entity.UserSession;
-import com.example.catphototg.bot.entity.enums.UserState;
-import com.example.catphototg.bot.handlers.interfaces.TelegramFacade;
-import com.example.catphototg.bot.handlers.interfaces.UpdateHandler;
-import com.example.catphototg.bot.service.CatCardService;
+import com.example.catphototg.dto.TelegramMessage;
+import com.example.catphototg.entity.User;
+import com.example.catphototg.entity.UserSession;
+import com.example.catphototg.entity.enums.UserState;
+import com.example.catphototg.handlers.interfaces.TelegramFacade;
+import com.example.catphototg.handlers.interfaces.UpdateHandler;
+import com.example.catphototg.service.CatCardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import static com.example.catphototg.bot.constants.BotConstants.BACK_TO_MY_CATS_ACTION;
-import static com.example.catphototg.bot.constants.BotConstants.DELETE_CAT_PREFIX;
+import static com.example.catphototg.constants.BotConstants.BACK_TO_MY_CATS_ACTION;
+import static com.example.catphototg.constants.BotConstants.DELETE_CAT_PREFIX;
 
 @Component
 @RequiredArgsConstructor

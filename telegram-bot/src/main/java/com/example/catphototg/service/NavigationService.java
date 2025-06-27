@@ -1,14 +1,15 @@
-package com.example.catphototg.bot.service;
+package com.example.catphototg.service;
 
-import com.example.catphototg.bot.constants.BotConstants;
-import com.example.catphototg.bot.entity.User;
-import com.example.catphototg.bot.entity.UserSession;
-import com.example.catphototg.bot.entity.ui.Keyboard;
-import com.example.catphototg.bot.entity.ui.MessageData;
-import com.example.catphototg.bot.handlers.interfaces.TelegramFacade;
-import com.example.catphototg.catservice.service.CatServiceClient;
+import com.example.catphototg.constants.BotConstants;
+import com.example.catphototg.entity.User;
+import com.example.catphototg.entity.UserSession;
+import com.example.catphototg.entity.ui.Keyboard;
+import com.example.catphototg.entity.ui.MessageData;
+import com.example.catphototg.handlers.interfaces.TelegramFacade;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import static com.example.catphototg.constants.BotConstants.*;
 
 @Service
 @RequiredArgsConstructor
@@ -53,18 +54,23 @@ public class NavigationService {
     }
 
     public void showCatsPage(TelegramFacade bot, User user, Long chatId, int page) {
-        bot.sendText(chatId, messageFactory.createTextMessage("⌛ Загружаем ваших котиков...", null));
 
-        catServiceClient.getCatsByAuthorAsync(user.getId(), page, 9)
-                .thenAccept(catPage -> {
-                    String message = "Ваши котики (страница " + (page + 1) + "):";
-                    Keyboard keyboard = keyboardService.createCatsKeyboard(catPage, page);
+        bot.sendText(chatId, messageFactory.createTextMessage(ASYNC_LOAD_CAT_MSG, null));
+
+        catServiceClient.getCatsByAuthorAsync(user.getId(), user.getUsername(), page, 9)
+                .thenAccept(pagedResponse -> {
+                    String message = String.format(MY_CATS_PAGE_MESSAGE,(page + 1));
+                    Keyboard keyboard = keyboardService.createCatsKeyboard(
+                            pagedResponse.content(),
+                            page,
+                            pagedResponse.totalPages()
+                    );
                     MessageData messageData = messageFactory.createTextMessage(message, keyboard);
 
                     bot.sendTextWithKeyboard(chatId, messageData);
                 })
                 .exceptionally(ex -> {
-                    bot.handleError(chatId, "Ошибка загрузки котиков", ex, user);
+                    bot.handleError(chatId, "Ошибка загрузки котиков", (Exception) ex, user);
                     return null;
                 });
     }

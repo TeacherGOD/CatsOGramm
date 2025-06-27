@@ -1,7 +1,7 @@
-package com.example.catphototg.bot.config;
+package com.example.catphototg.config;
 
-import com.example.catphototg.bot.handlers.*;
-import com.example.catphototg.bot.handlers.interfaces.UpdateHandler;
+import com.example.catphototg.handlers.*;
+import com.example.catphototg.handlers.interfaces.UpdateHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

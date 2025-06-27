@@ -1,9 +1,9 @@
-package com.example.catphototg.bot.service;
+package com.example.catphototg.service;
 
-import com.example.catphototg.bot.entity.User;
-import com.example.catphototg.bot.entity.UserSession;
-import com.example.catphototg.bot.entity.enums.UserState;
-import com.example.catphototg.bot.repository.SessionRepository;
+import com.example.catphototg.entity.User;
+import com.example.catphototg.entity.UserSession;
+import com.example.catphototg.entity.enums.UserState;
+import com.example.catphototg.repository.SessionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,6 +55,6 @@ public class SessionService {
                     updater.accept(session);
                     return sessionRepository.save(session);
                 })
-                .orElseThrow(() -> new IllegalStateException("Session not found"));
+                .orElseThrow(() -> new IllegalStateException("Сессия не найдена"));
     }
 }
