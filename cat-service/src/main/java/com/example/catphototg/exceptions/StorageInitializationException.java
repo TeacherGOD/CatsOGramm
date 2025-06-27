@@ -1,4 +1,4 @@
-package com.example.catphototg.catservice.exceptions;
+package com.example.catphototg.exceptions;
 
 public class StorageInitializationException extends RuntimeException {
   public StorageInitializationException(String message) {

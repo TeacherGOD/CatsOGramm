@@ -1,7 +1,7 @@
-package com.example.catphototg.catservice.entity;
+package com.example.catphototg.entity;
 
 
-import com.example.catphototg.bot.entity.User;
+import com.example.common.enums.ReactionType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,15 +27,15 @@ public class Cat {
     @Column(name = "file_path", nullable = false)
     private String filePath;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "author_id", nullable = false)
-    private User author;
+    @Column(name = "author_id", nullable = false)
+    private Long authorId;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @OneToMany(mappedBy = "cat", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Reaction> reactions = new ArrayList<>();
+
 
     public int getReactionCount(ReactionType type) {
         return (int) reactions.stream()
