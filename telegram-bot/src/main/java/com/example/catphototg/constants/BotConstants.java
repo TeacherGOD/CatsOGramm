@@ -1,6 +1,7 @@
 package com.example.catphototg.constants;
 
 public final class BotConstants {
+    public static final String URL_CLIENT="http://localhost:8080";
     public static final String CONFIRM_BUTTON = "✅ Подтвердить";
     public static final String CANCEL_BUTTON = "❌ Отмена";
     public static final String ADD_CAT_COMMAND = "➕ Добавить котика";
@@ -37,7 +38,6 @@ public final class BotConstants {
     public static final String PREV_PAGE_BUTTON = "⬅️ Назад";
     public static final String NEXT_PAGE_BUTTON = "Далее ➡️";
     public static final String BACK_TO_MENU_BUTTON = "В меню";
-    public static final String NO_CAT_FUNDED = "Котик не найден или недоступен";
     public static final String DELETE_BUTTON="❌ Удалить";
     public static final String LIKE_ACTION_PREFIX = "LIKE_";
     public static final String DISLIKE_ACTION_PREFIX = "DISLIKE_";

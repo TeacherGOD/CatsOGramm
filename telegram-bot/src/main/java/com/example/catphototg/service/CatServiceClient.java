@@ -7,7 +7,6 @@ import com.example.common.dto.CatWithoutAuthorNameDto;
 import com.example.common.dto.PagedResponse;
 import com.example.common.enums.ReactionType;
 import org.hibernate.service.spi.ServiceException;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
@@ -25,18 +24,17 @@ import java.nio.file.Files;
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 
+import static com.example.catphototg.constants.BotConstants.URL_CLIENT;
 import static com.example.catphototg.constants.BotConstants.USER_ID_PARAM;
 
 @Service
 public class CatServiceClient {
-    @Value("${cat.service.url}")
-    private String urlToWebClient;
 
     private final WebClient webClient;
 
 
     public CatServiceClient() {
-        this.webClient = WebClient.create(urlToWebClient);
+        this.webClient = WebClient.create(URL_CLIENT);
     }
 
     @Async("asyncTaskExecutor")
