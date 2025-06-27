@@ -1,12 +1,12 @@
-package com.example.catphototg.bot.service;
+package com.example.catphototg.service;
 
-import com.example.catphototg.bot.dto.TelegramMessage;
-import com.example.catphototg.bot.entity.User;
-import com.example.catphototg.bot.entity.UserSession;
-import com.example.catphototg.bot.entity.enums.UserState;
-import com.example.catphototg.bot.handlers.interfaces.UpdateHandler;
-import com.example.catphototg.bot.mapper.TelegramMessageMapper;
-import com.example.catphototg.bot.bot.CatBot;
+import com.example.catphototg.dto.TelegramMessage;
+import com.example.catphototg.entity.User;
+import com.example.catphototg.entity.UserSession;
+import com.example.catphototg.entity.enums.UserState;
+import com.example.catphototg.handlers.interfaces.UpdateHandler;
+import com.example.catphototg.mapper.TelegramMessageMapper;
+import com.example.catphototg.bot.CatBot;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.Update;

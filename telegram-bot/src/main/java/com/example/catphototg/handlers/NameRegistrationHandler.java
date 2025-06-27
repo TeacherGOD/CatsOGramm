@@ -1,18 +1,20 @@
-package com.example.catphototg.bot.handlers;
+package com.example.catphototg.handlers;
 
-import com.example.catphototg.bot.dto.TelegramMessage;
-import com.example.catphototg.bot.entity.User;
-import com.example.catphototg.bot.entity.UserSession;
-import com.example.catphototg.bot.entity.enums.UserState;
-import com.example.catphototg.bot.entity.ui.MessageData;
-import com.example.catphototg.bot.handlers.interfaces.TelegramFacade;
-import com.example.catphototg.bot.handlers.interfaces.UpdateHandler;
-import com.example.catphototg.bot.service.KeyboardService;
-import com.example.catphototg.bot.service.MessageFactory;
-import com.example.catphototg.bot.service.SessionService;
-import com.example.catphototg.bot.service.UserService;
+import com.example.catphototg.dto.TelegramMessage;
+import com.example.catphototg.entity.User;
+import com.example.catphototg.entity.UserSession;
+import com.example.catphototg.entity.enums.UserState;
+import com.example.catphototg.entity.ui.MessageData;
+import com.example.catphototg.handlers.interfaces.TelegramFacade;
+import com.example.catphototg.handlers.interfaces.UpdateHandler;
+import com.example.catphototg.service.KeyboardService;
+import com.example.catphototg.service.MessageFactory;
+import com.example.catphototg.service.SessionService;
+import com.example.catphototg.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+
+import static com.example.catphototg.constants.BotConstants.*;
 
 @Component
 @RequiredArgsConstructor

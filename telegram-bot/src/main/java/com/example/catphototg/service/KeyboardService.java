@@ -1,19 +1,18 @@
-package com.example.catphototg.bot.service;
+package com.example.catphototg.service;
 
-import com.example.catphototg.bot.constants.BotConstants;
-import com.example.catphototg.bot.entity.ui.Button;
-import com.example.catphototg.bot.entity.ui.Keyboard;
-import com.example.catphototg.bot.entity.ui.KeyboardRow;
-import com.example.catphototg.catservice.dto.CatDto;
+import com.example.catphototg.constants.BotConstants;
+import com.example.catphototg.entity.ui.Button;
+import com.example.catphototg.entity.ui.Keyboard;
+import com.example.catphototg.entity.ui.KeyboardRow;
+import com.example.common.dto.CatDto;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static com.example.catphototg.bot.constants.BotConstants.*;
+import static com.example.catphototg.constants.BotConstants.*;
 
 @Service
 @RequiredArgsConstructor
@@ -49,10 +48,12 @@ public class KeyboardService {
         return new Keyboard(rows);
     }
 
-    public Keyboard createCatsKeyboard(Page<CatDto> catPage, int currentPage) {
+    public Keyboard createCatsKeyboard(List<CatDto> cats,
+                                       int currentPage,
+                                       int totalPages) {
         List<KeyboardRow> rows = new ArrayList<>();
 
-        for (CatDto cat : catPage.getContent()) {
+        for (CatDto cat : cats) {
             Button catButton = new Button(cat.name(), CAT_DETAILS_PREFIX + cat.id());
             rows.add(new KeyboardRow(Collections.singletonList(catButton)));
         }
@@ -62,7 +63,7 @@ public class KeyboardService {
             navButtons.add(new Button(PREV_PAGE_BUTTON, PREV_PAGE_ACTION));
         }
         navButtons.add(new Button(BACK_TO_MENU_BUTTON, BACK_TO_MENU_ACTION));
-        if (catPage.hasNext()) {
+        if (currentPage < totalPages - 1) {
             navButtons.add(new Button(NEXT_PAGE_BUTTON, NEXT_PAGE_ACTION));
         }
         rows.add(new KeyboardRow(navButtons));

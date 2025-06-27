@@ -1,14 +1,13 @@
-package com.example.catphototg.bot.bot;
+package com.example.catphototg.bot;
 
-import com.example.catphototg.bot.config.BotProperties;
-import com.example.catphototg.bot.entity.User;
-import com.example.catphototg.bot.utils.KeyboardConverter;
-import com.example.catphototg.bot.entity.ui.MessageData;
-import com.example.catphototg.bot.exceptions.BotOperationException;
-import com.example.catphototg.bot.handlers.interfaces.TelegramFacade;
-import com.example.catphototg.bot.service.DispatcherService;
-import com.example.catphototg.catservice.service.FileStorageService;
-import com.example.catphototg.bot.service.MessageFactory;
+import com.example.catphototg.config.BotProperties;
+import com.example.catphototg.entity.User;
+import com.example.catphototg.utils.KeyboardConverter;
+import com.example.catphototg.entity.ui.MessageData;
+import com.example.catphototg.exceptions.BotOperationException;
+import com.example.catphototg.handlers.interfaces.TelegramFacade;
+import com.example.catphototg.service.DispatcherService;
+import com.example.catphototg.service.MessageFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
@@ -125,7 +124,7 @@ public class CatBot extends TelegramLongPollingBot  implements TelegramFacade {
             execute(photo);
         } catch (TelegramApiException e) {
             handleError(chatId, "Ошибка отправки фото с диска", e, null);
-            log.error(String.format("Filepath=%s,messageData=%s",filePath,messageData.text()));
+            log.error(String.format("Filepath=%s,messageData=%s",photoFile.toURI(),messageData.text()));
         }
     }
 
@@ -147,12 +146,30 @@ public class CatBot extends TelegramLongPollingBot  implements TelegramFacade {
     }
 
     @Override
-    public File downloadBotFile(String filePath) throws BotOperationException {
+    public File downloadBotFile(String fileId) throws BotOperationException {
         try {
-            return super.downloadFile(filePath);
+            GetFile getFile = new GetFile();
+            getFile.setFileId(fileId);
+
+            String filePath = execute(getFile).getFilePath();
+
+            return downloadFile(filePath);
         } catch (TelegramApiException e) {
             throw new BotOperationException("Ошибка загрузки файла", e);
         }
     }
 
+    public void sendPhotoWithUrl(Long chatId, String photoUrl, MessageData messageData) {
+        try {
+            SendPhoto photo = new SendPhoto();
+            photo.setChatId(chatId.toString());
+            photo.setPhoto(new InputFile(photoUrl));
+            photo.setCaption(messageData.text());
+            photo.setReplyMarkup(keyboardConverter.convert(messageData.keyboard()));
+
+            execute(photo);
+        } catch (TelegramApiException e) {
+            handleError(chatId, "Ошибка отправки фото по URL", e, null);
+        }
+    }
 }

@@ -1,14 +1,19 @@
-package com.example.catphototg.bot.service;
+package com.example.catphototg.service;
 
-import com.example.catphototg.bot.entity.User;
-import com.example.catphototg.bot.entity.UserSession;
-import com.example.catphototg.bot.entity.enums.UserState;
-import com.example.catphototg.bot.entity.ui.Keyboard;
-import com.example.catphototg.bot.entity.ui.MessageData;
-import com.example.catphototg.bot.handlers.interfaces.TelegramFacade;
-import com.example.catphototg.catservice.service.CatServiceClient;
+import com.example.catphototg.entity.User;
+import com.example.catphototg.entity.UserSession;
+import com.example.catphototg.entity.enums.UserState;
+import com.example.catphototg.entity.ui.Keyboard;
+import com.example.catphototg.entity.ui.MessageData;
+import com.example.catphototg.handlers.interfaces.TelegramFacade;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import java.io.*;
+import java.util.concurrent.CompletionException;
+
+import static com.example.catphototg.constants.BotConstants.*;
 
 @Service
 @RequiredArgsConstructor
@@ -19,32 +24,44 @@ public class CatCardService {
     private final SessionService sessionService;
     private final NavigationService navigationService;
 
+    @Value("${cat.service.files-url}")
+    private String filesBaseUrl;
+
     public void showCatCard(TelegramFacade bot, User user, Long catId, int currentPage, Long chatId) {
-        bot.sendText(chatId, messageFactory.createTextMessage("⌛ Загружаем информацию о котике...", null));
-        catServiceClient.getCatByIdAsync(catId)
-                .thenAccept(catDto -> {
-                    sessionService.updateSession(user.getTelegramId(), session -> {
-                        session.setViewingCatId(catId);
-                        session.setCurrentPage(currentPage);
-                        session.setState(UserState.VIEWING_CAT_DETAILS);
-                    });
 
-                    String caption = "🐱 Имя: " + catDto.name();
-                    Keyboard keyboard = keyboardService.createCatDetailsKeyboard(catId, currentPage);
-                    MessageData messageData = messageFactory.createTextMessage(caption, keyboard);
-
-                    if (catDto.filePath() != null && !catDto.filePath().isEmpty()) {
-                        bot.sendPhotoFromFile(chatId, catDto.filePath(), messageData);
-                    } else {
-                        String noPhotoMsg = "У этого котика нет фото 😿\n\n" + caption;
-                        bot.sendTextWithKeyboard(chatId,
-                                messageFactory.createTextMessage(noPhotoMsg, keyboard));
-                    }
-                })
-                .exceptionally(ex -> {
-                    bot.handleError(chatId, "Ошибка загрузки котика", ex, user);
-                    return null;
+        bot.sendText(chatId, messageFactory.createTextMessage(ASYNC_LOAD_CAT_INFO_MSG, null));
+        catServiceClient.getCatByChatIdAsync(catId, user.getUsername())
+            .thenCompose(catDto -> {
+                sessionService.updateSession(user.getTelegramId(), session -> {
+                    session.setViewingCatId(catId);
+                    session.setCurrentPage(currentPage);
+                    session.setState(UserState.VIEWING_CAT_DETAILS);
                 });
+
+                String caption = String.format(CAT_NAME, catDto.name());
+                Keyboard keyboard = keyboardService.createCatDetailsKeyboard(catId);
+                MessageData messageData = messageFactory.createTextMessage(caption, keyboard);
+
+                return catServiceClient.getFileAsync(catDto.filePath())
+                        .thenAccept(resource -> {
+                            try {
+                                File tempFile = File.createTempFile("cat", ".jpg");
+                                try (InputStream in = resource.getInputStream();
+                                     OutputStream out = new FileOutputStream(tempFile)) {
+                                    in.transferTo(out);
+                                }
+                                bot.sendPhotoFromFile(chatId, tempFile, messageData);
+                                tempFile.delete();
+                            } catch (IOException e) {
+                                bot.handleError(chatId, "Ошибка обработки файла", e, user);
+                            }
+                        });
+            })
+            .exceptionally(ex -> {
+                Throwable cause = ex instanceof CompletionException ? ex.getCause() : ex;
+                bot.handleError(chatId, "Ошибка загрузки котика", (Exception) cause, user);
+                return null;
+            });
     }
 
     public void handleBackAction(TelegramFacade bot, User user, Long chatId) {
@@ -96,7 +113,8 @@ public class CatCardService {
                         s.setState(UserState.BROWSING_MY_CATS);
                     });
 
-                    String successMsg = "Котик успешно удален ✅";
+
+                    String successMsg = CAT_SUCCESS_DELETE_MESSAGE;
                     bot.sendText(chatId, messageFactory.createTextMessage(successMsg, null));
 
                     navigationService.showCatsPage(bot, user, chatId, newPage);

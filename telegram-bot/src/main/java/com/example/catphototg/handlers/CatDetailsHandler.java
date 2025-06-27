@@ -1,14 +1,14 @@
-package com.example.catphototg.bot.handlers;
+package com.example.catphototg.handlers;
 
-import com.example.catphototg.bot.constants.BotConstants;
-import com.example.catphototg.bot.dto.TelegramMessage;
-import com.example.catphototg.bot.entity.User;
-import com.example.catphototg.bot.entity.UserSession;
-import com.example.catphototg.bot.handlers.interfaces.TelegramFacade;
-import com.example.catphototg.bot.handlers.interfaces.UpdateHandler;
-import com.example.catphototg.bot.service.SessionService;
-import com.example.catphototg.bot.service.CatCardService;
-import com.example.catphototg.bot.entity.enums.UserState;
+import com.example.catphototg.constants.BotConstants;
+import com.example.catphototg.dto.TelegramMessage;
+import com.example.catphototg.entity.User;
+import com.example.catphototg.entity.UserSession;
+import com.example.catphototg.handlers.interfaces.TelegramFacade;
+import com.example.catphototg.handlers.interfaces.UpdateHandler;
+import com.example.catphototg.service.SessionService;
+import com.example.catphototg.service.CatCardService;
+import com.example.catphototg.entity.enums.UserState;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -34,6 +34,7 @@ public class CatDetailsHandler implements UpdateHandler {
                 bot,
                 user,
                 catId,
+                session.getCurrentPage(),
                 message.chatId()
         );
         sessionService.updateSession(user.getTelegramId(), s -> {
