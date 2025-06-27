@@ -1,0 +1,55 @@
+package com.example.catphototg.service;
+
+import com.example.catphototg.constants.BotConstants;
+import com.example.catphototg.entity.User;
+import com.example.catphototg.entity.UserSession;
+import com.example.catphototg.entity.ui.Keyboard;
+import com.example.catphototg.entity.ui.MessageData;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import static com.example.catphototg.constants.BotConstants.*;
+
+
+@Service
+@RequiredArgsConstructor
+public class MessageFactory {
+    private final KeyboardService keyboardService;
+
+    public MessageData createMainMenuMessage(User user) {
+        String text = String.format(MAIN_MENU_MESSAGE,user.getDisplayName());
+        return new MessageData(text, keyboardService.mainMenuKeyboard());
+    }
+
+    public MessageData createTextMessage(String text, Keyboard keyboard) {
+        return new MessageData(text, keyboard);
+    }
+
+    public MessageData createNameRegistrationPrompt() {
+        return new MessageData(NAME_REGISTRATION_PROMPT, keyboardService.cancelKeyboard());
+    }
+
+    public MessageData createErrorMessage(User user, String errorDetails) {
+        String userName = (user != null && user.getDisplayName() != null) ?
+                user.getDisplayName() : NO_NAME_USER;
+        String text = String.format(ERROR_MESSAGE,userName,errorDetails);
+        return new MessageData(text, keyboardService.mainMenuKeyboard());
+    }
+
+    public MessageData createCatNamePrompt(User user) {
+        String message = user.getDisplayName() + ", " + BotConstants.CAT_NAME_PROMPT;
+        return new MessageData(message, keyboardService.cancelKeyboard());
+    }
+
+    public MessageData createCatPhotoPrompt(User user) {
+        String message = user.getDisplayName() + ", " + BotConstants.CAT_PHOTO_PROMPT;
+        return new MessageData(message, keyboardService.cancelKeyboard());
+    }
+
+    public MessageData createCatConfirmationMessage(User user, UserSession session) {
+        String caption = String.format(
+                CAT_CONFIRMATION_PROMPT,user.getDisplayName(),
+                session.getCatName(),user.getUsername());
+        return new MessageData(caption, keyboardService.confirmationKeyboard());
+    }
+}
