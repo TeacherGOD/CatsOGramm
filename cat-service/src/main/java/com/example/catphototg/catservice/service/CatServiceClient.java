@@ -4,6 +4,7 @@ import com.example.catphototg.catservice.dto.CatCreationDto;
 import com.example.catphototg.catservice.dto.CatDto;
 import com.example.catphototg.catservice.entity.ReactionType;
 import org.hibernate.service.spi.ServiceException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -18,11 +19,10 @@ import java.util.concurrent.CompletableFuture;
 
 @Service
 public class CatServiceClient {
-    private final WebClient webClient;
+    @Value("${cat.service.url}")
+    private WebClient webClient;
 
-    public CatServiceClient() {
-        this.webClient = WebClient.create("http://localhost:8081"); // URL cat-service
-    }
+
 
     @Async("asyncTaskExecutor")
     public CompletableFuture<CatDto> addCatAsync(CatCreationDto dto) {
