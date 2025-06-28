@@ -6,12 +6,11 @@ import com.example.catphototg.entity.enums.UserState;
 import com.example.catphototg.entity.ui.Keyboard;
 import com.example.catphototg.entity.ui.MessageData;
 import com.example.catphototg.handlers.interfaces.TelegramFacade;
+import com.example.catphototg.kafka.CatDetailsKafka;
+import com.example.catphototg.kafka.KafkaSender;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
-import java.io.*;
-import java.util.concurrent.CompletionException;
 
 import static com.example.catphototg.constants.BotConstants.*;
 
@@ -23,52 +22,51 @@ public class CatCardService {
     private final MessageFactory messageFactory;
     private final SessionService sessionService;
     private final NavigationService navigationService;
+    private final TelegramFacade bot;
+    private final KafkaSender kafkaSender;
 
     @Value("${cat.service.files-url}")
     private String filesBaseUrl;
+    private final FileStorageService fileStorageService;
 
-    public void showCatCard(TelegramFacade bot, User user, Long catId, int currentPage, Long chatId) {
+    public void showCatCardPrepare(Long telegramId, Long catId,  Long chatId,Long userId) {
 
         bot.sendText(chatId, messageFactory.createTextMessage(ASYNC_LOAD_CAT_INFO_MSG, null));
-        catServiceClient.getCatByChatIdAsync(catId, user.getUsername())
-            .thenCompose(catDto -> {
-                sessionService.updateSession(user.getTelegramId(), session -> {
-                    session.setViewingCatId(catId);
-                    session.setCurrentPage(currentPage);
-                    session.setState(UserState.VIEWING_CAT_DETAILS);
-                });
+        kafkaSender.sendCatDetails(new CatDetailsKafka(
+                telegramId,
+                catId,
+                null,
+                null,
+                chatId,
+                userId
+        ));
 
-                String caption = String.format(CAT_NAME, catDto.name());
-                Keyboard keyboard = keyboardService.createCatDetailsKeyboard(catId);
-                MessageData messageData = messageFactory.createTextMessage(caption, keyboard);
+    }
 
-                return catServiceClient.getFileAsync(catDto.filePath())
-                        .thenAccept(resource -> {
-                            try {
-                                File tempFile = File.createTempFile("cat", ".jpg");
-                                try (InputStream in = resource.getInputStream();
-                                     OutputStream out = new FileOutputStream(tempFile)) {
-                                    in.transferTo(out);
-                                }
-                                bot.sendPhotoFromFile(chatId, tempFile, messageData);
-                                tempFile.delete();
-                            } catch (IOException e) {
-                                bot.handleError(chatId, "Ошибка обработки файла", e, user);
-                            }
-                        });
-            })
-            .exceptionally(ex -> {
-                Throwable cause = ex instanceof CompletionException ? ex.getCause() : ex;
-                bot.handleError(chatId, "Ошибка загрузки котика", (Exception) cause, user);
-                return null;
-            });
+    public void showCatCard(CatDetailsKafka catDetailsKafka){//tgId, catId, catName, filepath, chatId
+        sessionService.updateSession(catDetailsKafka.telegramId(), session -> {
+            session.setViewingCatId(catDetailsKafka.catId());
+            session.setState(UserState.VIEWING_CAT_DETAILS);
+        });
+
+        String caption = String.format(CAT_NAME, catDetailsKafka.catName());
+        Keyboard keyboard = keyboardService.createCatDetailsKeyboard(catDetailsKafka.catId());
+        MessageData messageData = messageFactory.createTextMessage(caption, keyboard);
+
+        try {
+            var photo = fileStorageService.load(catDetailsKafka.filePath());
+            bot.sendPhotoFromFile(catDetailsKafka.catId(), photo.toFile(), messageData);
+            fileStorageService.delete(photo.getFileName().toString());
+        } catch (Exception e) {
+            bot.handleError(catDetailsKafka.catId(), "Ошибка получения файла", e, null);
+        }
     }
 
     public void handleBackAction(TelegramFacade bot, User user, Long chatId) {
         UserSession session = sessionService.findByUserTelegramId(user.getTelegramId())
                 .orElseThrow();
 
-        navigationService.showCatsPage(bot, user, chatId, session.getCurrentPage());
+        navigationService.showCatsPagePrepare(bot, user, chatId, session.getCurrentPage());
         sessionService.updateSession(user.getTelegramId(), s ->
                 s.setState(UserState.BROWSING_MY_CATS));
     }
@@ -85,41 +83,46 @@ public class CatCardService {
         int currentPage = session.getCurrentPage();
 
         bot.sendText(chatId, new MessageData("Начинаем удаление котика...",null));
+        catServiceClient.deleteCatAsync(catIdToDelete, user.getId());
 
-        catServiceClient.deleteCatAsync(catIdToDelete, user.getId())
-                .thenAccept(deleted -> {
-                    if (deleted) {
-                        updateUIAfterDeletion(bot, user, chatId, currentPage);
-                    } else {
-                        bot.handleError(chatId, "Не удалось удалить котика", null, user);
-                    }
-                })
-                .exceptionally(ex -> {
-                    bot.handleError(chatId, "Ошибка при удалении котика", (Exception) ex, user);
-                    return null;
-                });
+        updateUIAfterDeletionPrepare(bot, user, chatId, currentPage);
+
+
     }
 
-    private void updateUIAfterDeletion(TelegramFacade bot, User user, Long chatId,
-                                       int currentPage) {
+    public void updateUIAfterDeletionPrepare(TelegramFacade bot, User user, Long chatId,
+                                              int currentPage) {
+        kafkaSender.sendCountCatsAsk(user.getId());
 
-        catServiceClient.getCatsCountAsync(user.getId())
-                .thenAccept(totalPages -> {
-                    int newPage = calculateNewPage(currentPage, totalPages);
-
-                    sessionService.updateSession(user.getTelegramId(), s -> {
-                        s.setViewingCatId(null);
-                        s.setCurrentPage(newPage);
-                        s.setState(UserState.BROWSING_MY_CATS);
-                    });
-
-
-                    String successMsg = CAT_SUCCESS_DELETE_MESSAGE;
-                    bot.sendText(chatId, messageFactory.createTextMessage(successMsg, null));
-
-                    navigationService.showCatsPage(bot, user, chatId, newPage);
-                });
     }
+
+    public void updateUIAfterDeletion(Long userId, Long chatId, Long telegramId, String username,
+                                              int countCats) {
+        try {
+            int totalPages = countCats/9;
+            var session = sessionService.getSession(userId);
+
+            int newPage = calculateNewPage(session.getCurrentPage(), totalPages);
+            var fakeUser=new User();
+            fakeUser.setTelegramId(telegramId);
+            fakeUser.setId(userId);
+            fakeUser.setUsername(username);
+            sessionService.updateSession(fakeUser.getTelegramId(), s -> {
+                s.setViewingCatId(null);
+                s.setCurrentPage(newPage);
+                s.setState(UserState.BROWSING_MY_CATS);
+            });
+
+            bot.sendText(chatId, messageFactory.createTextMessage(CAT_SUCCESS_DELETE_MESSAGE, null));
+
+            navigationService.showCatsPagePrepare(bot, fakeUser, chatId, newPage);
+        } catch (Exception ex) {
+            bot.handleError(chatId, "Ошибка получения количества котиков", ex, null);
+        }
+
+    }
+
+
     private int calculateNewPage(int currentPage, int totalPages) {
         if (currentPage >= totalPages && totalPages > 0) {
             return totalPages - 1;

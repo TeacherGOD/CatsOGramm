@@ -57,4 +57,8 @@ public class SessionService {
                 })
                 .orElseThrow(() -> new IllegalStateException("Сессия не найдена"));
     }
+
+    public UserSession getSession(Long telegramId) {
+        return sessionRepository.findByUserTelegramId(telegramId).get();
+    }
 }

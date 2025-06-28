@@ -49,15 +49,14 @@ public class StateRestoreHandler implements UpdateHandler {
                 break;
             case BROWSING_MY_CATS:
                 int currentPage = session.getCurrentPage();
-                navigationService.showCatsPage(bot, user, message.chatId(), currentPage);
+                navigationService.showCatsPagePrepare(bot, user, message.chatId(), currentPage);
                 break;
             case VIEWING_CAT_DETAILS:
-                catCardService.showCatCard(
-                        bot,
-                        user,
+                catCardService.showCatCardPrepare(
+                        session.getUser().getTelegramId(),
                         session.getViewingCatId(),
-                        session.getCurrentPage(),
-                        message.chatId()
+                        message.chatId(),
+                        session.getId()
                 );
                 sessionService.updateSession(user.getTelegramId(), s -> {
                     s.setViewingCatId(session.getViewingCatId());
@@ -67,7 +66,7 @@ public class StateRestoreHandler implements UpdateHandler {
                 break;
             case VIEWING_RANDOM_CAT:
                 if (session.getViewingCatId() != null) {
-                    viewCatsHandler.showRandomCat(user, message.chatId());
+                    viewCatsHandler.showRandomCatPrepare(user, message.chatId());
                 } else {
                     viewCatsHandler.handle(user, session, message);
                 }

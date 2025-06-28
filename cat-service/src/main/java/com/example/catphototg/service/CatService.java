@@ -3,11 +3,11 @@ package com.example.catphototg.service;
 
 import com.example.catphototg.entity.Cat;
 import com.example.catphototg.exceptions.CatNotFoundException;
+import com.example.catphototg.kafka.CatDto;
 import com.example.catphototg.mapper.CatMapper;
 import com.example.catphototg.mapper.CatWithoutAuthorNameDtoMapper;
 import com.example.catphototg.repository.CatRepository;
 import com.example.common.dto.CatCreationDto;
-import com.example.common.dto.CatDto;
 import com.example.common.dto.CatWithoutAuthorNameDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,11 +24,10 @@ import java.util.Optional;
 @Slf4j
 public class CatService {
     private final CatRepository catRepository;
-    private final FileStorageService fileStorageService;
     private final CatMapper catMapper;
 
     @Transactional
-    public CatDto  saveCat(CatCreationDto dto) {
+    public CatDto saveCat(CatCreationDto dto) {
         Cat cat = new Cat();
         cat.setName(dto.name());
         cat.setFilePath(dto.filepath());
@@ -36,7 +35,7 @@ public class CatService {
 
         Cat savedCat = catRepository.save(cat);
 
-        return catMapper.toDto(cat,dto.authorName());
+        return catMapper.toDto(cat,dto.authorName(),null);
     }
 
     public int getCatsCountByAuthor(Long userId) {
@@ -54,19 +53,20 @@ public class CatService {
                 .orElseThrow(() -> new CatNotFoundException("Кошка с идентификатором " + catId +" не найден"));
     }
 
-    public boolean deleteCatById(Long catId, Long userId) {
+    public String deleteCatById(Long catId, Long userId) {
         Optional<Cat> catOpt = catRepository.findById(catId);
-        if (catOpt.isEmpty()) return false;
+        if (catOpt.isEmpty()) throw new CatNotFoundException("Cat not found with id: "+catId);
 
         Cat cat = catOpt.get();
+        var filepath=cat.getFilePath();
         if (!cat.getAuthorId().equals(userId)) {
-            return false;
+            throw new IllegalArgumentException(String.format("Not your cat(%d) user with id (%d)",catId,userId));
         }
 
-        fileStorageService.delete(cat.getFilePath());
+        //fileStorageService.delete(cat.getFilePath());
 
         catRepository.delete(cat);
-        return true;
+        return filepath;
     }
 
     public Optional<CatWithoutAuthorNameDto> findRandomUnseenCat(Long userId) {

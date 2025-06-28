@@ -4,7 +4,7 @@ import com.example.catphototg.constants.BotConstants;
 import com.example.catphototg.entity.ui.Button;
 import com.example.catphototg.entity.ui.Keyboard;
 import com.example.catphototg.entity.ui.KeyboardRow;
-import com.example.common.dto.CatDto;
+import com.example.catphototg.kafka.CatDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

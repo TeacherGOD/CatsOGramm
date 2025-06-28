@@ -23,6 +23,7 @@ public class AddCatConfirmationHandler implements UpdateHandler {
     private final MessageFactory messageFactory;
     private final KeyboardService keyboardService;
     private final CatServiceClient catServiceClient;
+    private final FileStorageService fileStorageService;
 
     @Override
     public boolean canHandle(User user, UserSession session, TelegramMessage message) {
@@ -44,25 +45,19 @@ public class AddCatConfirmationHandler implements UpdateHandler {
                     user.getId(),
                     user.getDisplayName() != null ? user.getDisplayName() : user.getUsername()
             );
-            catServiceClient.addCatAsync(dto)
-                    .thenAccept(cat -> {
-                        sessionService.clearSession(telegramId);
-
-                        String successText = String.format(CAT_SUCCESS_ADD_MESSAGE,cat.name());
-                        MessageData successMessage = messageFactory.createTextMessage(
-                                successText,
-                                keyboardService.mainMenuKeyboard()
-                        );
-                        bot.sendTextWithKeyboard(chatId, successMessage);
-                    })
-                    .exceptionally(ex -> {
-                        bot.handleError(chatId, "Ошибка при добавлении котика", (Exception) ex, user);
-                        return null;
-                    });
-
             bot.sendText(chatId, messageFactory.createTextMessage(ASYNC_CAT_ADD_MESSAGE,null));
+            catServiceClient.addCatAsync(dto);
+            sessionService.clearSession(telegramId);
+
+            String successText = String.format(CAT_SUCCESS_ADD_MESSAGE,session.getCatName());
+            MessageData successMessage = messageFactory.createTextMessage(
+                    successText,
+                    keyboardService.mainMenuKeyboard()
+            );
+            bot.sendTextWithKeyboard(chatId, successMessage);
         }
         else if (CANCEL_CAT_ACTION.equals(text)) {
+            fileStorageService.delete(session.getFilePath());
             sessionService.clearSession(telegramId);
             MessageData cancelMessage = messageFactory.createTextMessage(
                     CANCEL_ADD_CAT_MESSAGE,
@@ -75,4 +70,5 @@ public class AddCatConfirmationHandler implements UpdateHandler {
             bot.sendPhotoWithKeyboard(chatId, session.getPhotoFileId(), messageData);
         }
     }
+
 }

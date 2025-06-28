@@ -6,10 +6,15 @@ import com.example.catphototg.entity.UserSession;
 import com.example.catphototg.entity.ui.Keyboard;
 import com.example.catphototg.entity.ui.MessageData;
 import com.example.catphototg.handlers.interfaces.TelegramFacade;
+import com.example.catphototg.kafka.CatDto;
+import com.example.catphototg.kafka.CatPageRequest;
+import com.example.catphototg.kafka.KafkaSender;
+import com.example.catphototg.kafka.PagedResponseMy;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import static com.example.catphototg.constants.BotConstants.*;
+import static com.example.catphototg.constants.BotConstants.ASYNC_LOAD_CAT_MSG;
+import static com.example.catphototg.constants.BotConstants.MY_CATS_PAGE_MESSAGE;
 
 @Service
 @RequiredArgsConstructor
@@ -18,6 +23,8 @@ public class NavigationService {
     private final SessionService sessionService;
     private final MessageFactory messageFactory;
     private final KeyboardService keyboardService;
+    private final KafkaSender kafkaSender;
+    private final TelegramFacade bot;
 
     public void handleMyCatsNavigation(TelegramFacade bot, User user, String callbackData, Long chatId) {
         UserSession session = sessionService.findByUserTelegramId(user.getTelegramId())
@@ -42,36 +49,37 @@ public class NavigationService {
     private void handleNextPage(TelegramFacade bot, User user, UserSession session, Long chatId) {
         int nextPage = session.getCurrentPage() + 1;
         sessionService.updateSession(user.getTelegramId(), s -> s.setCurrentPage(nextPage));
-        showCatsPage(bot, user, chatId, nextPage);
+        showCatsPagePrepare(bot, user, chatId, nextPage);
     }
 
     private void handlePrevPage(TelegramFacade bot, User user, UserSession session, Long chatId) {
         if (session.getCurrentPage() > 0) {
             int prevPage = session.getCurrentPage() - 1;
             sessionService.updateSession(user.getTelegramId(), s -> s.setCurrentPage(prevPage));
-            showCatsPage(bot, user, chatId, prevPage);
+            showCatsPagePrepare(bot, user, chatId, prevPage);
         }
     }
 
-    public void showCatsPage(TelegramFacade bot, User user, Long chatId, int page) {
+    public void showCatsPagePrepare(TelegramFacade bot, User user, Long chatId, int page) {
 
         bot.sendText(chatId, messageFactory.createTextMessage(ASYNC_LOAD_CAT_MSG, null));
+        kafkaSender.sendGetAllMyCat(new CatPageRequest(user.getId(),
+                user.getUsername(),
+                page,
+                9,
+                chatId
+                ));
+    }
 
-        catServiceClient.getCatsByAuthorAsync(user.getId(), user.getUsername(), page, 9)
-                .thenAccept(pagedResponse -> {
-                    String message = String.format(MY_CATS_PAGE_MESSAGE,(page + 1));
-                    Keyboard keyboard = keyboardService.createCatsKeyboard(
-                            pagedResponse.content(),
-                            page,
-                            pagedResponse.totalPages()
-                    );
-                    MessageData messageData = messageFactory.createTextMessage(message, keyboard);
+    public void showCatsPage(PagedResponseMy<CatDto> pagedResponse){
+        String message = String.format(MY_CATS_PAGE_MESSAGE, (pagedResponse.currentPage() + 1));
+        Keyboard keyboard = keyboardService.createCatsKeyboard(
+                pagedResponse.content(),
+                pagedResponse.currentPage(),
+                pagedResponse.totalPages()
+        );
+        MessageData messageData = messageFactory.createTextMessage(message, keyboard);
 
-                    bot.sendTextWithKeyboard(chatId, messageData);
-                })
-                .exceptionally(ex -> {
-                    bot.handleError(chatId, "Ошибка загрузки котиков", (Exception) ex, user);
-                    return null;
-                });
+        bot.sendTextWithKeyboard(pagedResponse.chatId(), messageData);
     }
 }
