@@ -7,8 +7,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.file.Files;
@@ -20,10 +20,10 @@ public class FileStorageService {
     @Value("${file.upload-dir:uploads}")
     private Path rootLocation;
 
-    public String store(MultipartFile file) {
+    public String store(File file) {
         try {
             String filename = UUID.randomUUID() + ".jpg";
-            Files.copy(file.getInputStream(), rootLocation.resolve(filename));
+            Files.copy(file.toPath(), rootLocation.resolve(filename));
             return filename;
         } catch (Exception e) {
             throw new StorageException("Не удалось сохранить файл: " + e.getMessage(), e);

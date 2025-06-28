@@ -1,9 +1,9 @@
-package com.example.common.dto;
+package com.example.catphototg.kafka;
 
 
 import java.util.List;
 
-public record PagedResponse<T>(
+public record PagedResponseMy<T>(
         List<T> content,
         int currentPage,
         int totalPages,
