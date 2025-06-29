@@ -55,17 +55,12 @@ public class ReactionHandler implements UpdateHandler {
             sessionService.updateSession(user.getTelegramId(), s ->
                     s.setViewingCatId(null)
             );
-            viewCatsHandler.showRandomCat(user, message.chatId());
+            viewCatsHandler.showRandomCatPrepare(user, message.chatId());
         } catch (Exception e) {
             bot.handleError(message.chatId(), "Ошибка во время реакции: ", e,user);
         }
     }
     private void updateReaction(User user, Long chatId, Long catId, ReactionType type) {
-
-        catServiceClient.updateReactionAsync(catId, user.getId(), type)
-                .exceptionally(ex -> {
-                    bot.handleError(chatId, "Ошибка обновления реакции", (Exception) ex, user);
-                    return null;
-                });
+        catServiceClient.updateReactionAsync(catId, user.getId(), type);
     }
 }

@@ -1,7 +1,7 @@
 package com.example.catphototg.mapper;
 
 import com.example.catphototg.entity.Cat;
-import com.example.common.dto.CatDto;
+import com.example.catphototg.kafka.CatDto;
 import com.example.common.enums.ReactionType;
 import org.springframework.stereotype.Component;
 
@@ -11,7 +11,7 @@ import java.util.Map;
 @Component
 public class CatMapper {
 
-    public CatDto toDto(Cat cat, String authorName) {
+    public CatDto toDto(Cat cat, String authorName,Long chatId) {
         Map<ReactionType, Integer> reactionCounts = new EnumMap<>(ReactionType.class);
         for (ReactionType type : ReactionType.values()) {
             reactionCounts.put(type, cat.getReactionCount(type));
@@ -31,7 +31,8 @@ public class CatMapper {
                 cat.getAuthorId(),
                 authorName,
                 reactionCounts,
-                userReactions
+                userReactions,
+                chatId
         );
     }
 

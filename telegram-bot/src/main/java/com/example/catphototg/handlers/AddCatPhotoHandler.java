@@ -8,17 +8,12 @@ import com.example.catphototg.entity.enums.UserState;
 import com.example.catphototg.entity.ui.MessageData;
 import com.example.catphototg.handlers.interfaces.TelegramFacade;
 import com.example.catphototg.handlers.interfaces.UpdateHandler;
-import com.example.catphototg.service.CatServiceClient;
-import com.example.catphototg.service.KeyboardService;
-import com.example.catphototg.service.MessageFactory;
-import com.example.catphototg.service.SessionService;
+import com.example.catphototg.service.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.io.File;
-import java.util.concurrent.CompletionException;
-
-import static com.example.catphototg.constants.BotConstants.*;
+import static com.example.catphototg.constants.BotConstants.ADD_CAT_PROMPT_MESSAGE;
+import static com.example.catphototg.constants.BotConstants.CANCEL_ACTION;
 
 
 @Component
@@ -29,6 +24,7 @@ public class AddCatPhotoHandler implements UpdateHandler {
     private final KeyboardService keyboardService;
     private final MessageFactory messageFactory;
     private final CatServiceClient catServiceClient;
+    private final FileStorageService fileStorageService;
 
     public boolean canHandle(User user, UserSession session, TelegramMessage message) {
         return session != null &&
@@ -50,31 +46,17 @@ public class AddCatPhotoHandler implements UpdateHandler {
         }
 
         if (message.hasPhoto()) {
-
-            bot.sendText(chatId, new MessageData(ASYNC_CLOUD_IMAGE,null));
-
             try {
+                String filename = fileStorageService.store(bot.downloadBotFile(message.photoFileId()));
 
-                File tempFile = bot.downloadBotFile(message.photoFileId());
+                sessionService.updateSession(user.getTelegramId(), s -> {
+                    s.setPhotoFileId(message.photoFileId());
+                    s.setFilePath(filename);
+                    s.setState(UserState.ADDING_CAT_CONFIRMATION);
+                });
 
-                catServiceClient.uploadFileAsync(tempFile)
-                        .thenAccept(storedFilename -> {
-                            sessionService.updateSession(user.getTelegramId(), s -> {
-                                s.setPhotoFileId(message.photoFileId());
-                                s.setFilePath(storedFilename);
-                                s.setState(UserState.ADDING_CAT_CONFIRMATION);
-                            });
-
-                            MessageData messageData = messageFactory.createCatConfirmationMessage(user, session);
-                            bot.sendPhotoWithKeyboard(chatId, message.photoFileId(), messageData);
-
-                            tempFile.delete();
-                        })
-                        .exceptionally(ex -> {
-                            Throwable cause = ex instanceof CompletionException ? ex.getCause() : ex;
-                            bot.handleError(chatId, "Ошибка загрузки фото", (Exception) cause, user);
-                            return null;
-                        });
+                MessageData messageData = messageFactory.createCatConfirmationMessage(user, session);
+                bot.sendPhotoWithKeyboard(chatId, message.photoFileId(), messageData);
             } catch (Exception e) {
                 sessionService.clearSession(user.getTelegramId());
                 bot.handleError(chatId, "Ошибка обработки фото", e, user);

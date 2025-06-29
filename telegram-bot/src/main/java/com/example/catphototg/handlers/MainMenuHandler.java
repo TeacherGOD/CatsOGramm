@@ -44,7 +44,7 @@ public class MainMenuHandler implements UpdateHandler {
 
             case VIEW_CATS_ACTION:
                 sessionService.getOrCreateSession(user, UserState.VIEWING_RANDOM_CAT);
-                viewCatsHandler.showRandomCat(user, chatId);
+                viewCatsHandler.showRandomCatPrepare(user, chatId);
                 break;
 
             case MY_CATS_ACTION:
@@ -53,7 +53,7 @@ public class MainMenuHandler implements UpdateHandler {
                         UserState.BROWSING_MY_CATS
                 );
                 sessionService.updateSession(user.getTelegramId(),s->s.setCurrentPage(0));
-                navigationService.showCatsPage(bot, user, chatId, 0);
+                navigationService.showCatsPagePrepare(bot, user, chatId, 0);
                 break;
 
             case CHANGE_NAME_ACTION:

@@ -30,12 +30,11 @@ public class CatDetailsHandler implements UpdateHandler {
         String catIdStr = message.text().substring(BotConstants.CAT_DETAILS_PREFIX.length());
         long catId = Long.parseLong(catIdStr);
 
-        catCardService.showCatCard(
-                bot,
-                user,
+        catCardService.showCatCardPrepare(
+                user.getTelegramId(),
                 catId,
-                session.getCurrentPage(),
-                message.chatId()
+                message.chatId(),
+                user.getId()
         );
         sessionService.updateSession(user.getTelegramId(), s -> {
             s.setViewingCatId(catId);
@@ -43,4 +42,6 @@ public class CatDetailsHandler implements UpdateHandler {
             s.setState(UserState.VIEWING_CAT_DETAILS);
         });
     }
+
+
 }
