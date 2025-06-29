@@ -22,4 +22,7 @@ public interface SessionRepository extends JpaRepository<UserSession, Long> {
     void deleteByUserTelegramId(@Param("telegramId") Long telegramId);
 
     Optional<UserSession> findByUserTelegramId(Long telegramId);
+
+
+    UserSession getUserSessionByUserId(Long userId);
 }
