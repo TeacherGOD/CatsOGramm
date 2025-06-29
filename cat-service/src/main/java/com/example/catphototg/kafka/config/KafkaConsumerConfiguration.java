@@ -21,20 +21,7 @@ public class KafkaConsumerConfiguration {
     private String bootstrapServers;
     @Value("${spring.kafka.server.consumer.group.id}")
     private String consumerGroupId;
-//    @Value("${spring.kafka.server.consumer.group.count}")
-//    private String countCatTopic;
-//    @Value("${spring.kafka.server.consumer.topic.add}")
-//    private String addCatTopic;
-//    @Value("${spring.kafka.server.consumer.topic.getMy}")
-//    private String getAllMyCatTopic;
-//    @Value("${spring.kafka.server.consumer.topic.info}")
-//    private String getDetailsTopic;
-//    @Value("${spring.kafka.server.consumer.topic.random}")
-//    private String getRandomCatTopic;
-//    @Value("${spring.kafka.server.consumer.topic.reaction}")
-//    private String makeReactionTopic;
-//    @Value("${spring.kafka.server.consumer.topic.delete}")
-//    private String deleteCatTopic;
+
 
     @Bean
     public ConsumerFactory<String, String> consumerFactory() {
